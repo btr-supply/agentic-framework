@@ -1,0 +1,23 @@
+{
+  "name": "btr-af",
+  "version": "1.0.0",
+  "description": "BTR-AF - BTR Agentic Framework: Elite DeFi Development Framework",
+  "keywords": [
+    "defi",
+    "smart-contracts",
+    "security",
+    "ai-agents",
+    "purple-team",
+    "agentic-framework",
+    "btr"
+  ],
+  "license": "MIT",
+  "author": "BTR",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/btr-supply/agentic-framework.git"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
