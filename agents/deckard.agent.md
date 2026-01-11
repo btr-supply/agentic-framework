@@ -9,6 +9,12 @@ tools:
   - Read
   - Grep
   - Glob
+  - Write
+  - Edit
+  - WebSearch
+  - mcp__web-search-prime__webSearchPrime
+  - mcp__zread__search_doc
+  - mcp__zread__read_file
 model: sonnet
 handoffs:
   - label: Systems audit (Trinity)

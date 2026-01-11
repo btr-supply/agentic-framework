@@ -10,6 +10,12 @@ tools:
   - Write
   - Edit
   - Bash
+  - Glob
+  - Grep
+  - Task
+  - WebSearch
+  - mcp__web-search-prime__webSearchPrime
+  - mcp__web_reader__webReader
 model: sonnet
 handoffs:
   - label: Implement with Vulcan

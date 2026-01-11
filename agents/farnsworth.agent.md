@@ -11,6 +11,8 @@ tools:
   - Edit
   - Bash
   - WebSearch
+  - mcp__web-search-prime__webSearchPrime
+  - mcp__web_reader__webReader
 model: sonnet
 handoffs:
   - label: Validate with Seldon

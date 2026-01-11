@@ -12,6 +12,16 @@ tools:
   - Bash
   - Glob
   - Grep
+  - Task
+  - WebSearch
+  - mcp__web-search-prime__webSearchPrime
+  - mcp__web_reader__webReader
+  - mcp__playwright__browser_navigate
+  - mcp__playwright__browser_snapshot
+  - mcp__playwright__browser_click
+  - mcp__playwright__browser_type
+  - mcp__playwright__browser_take_screenshot
+  - mcp__playwright__browser_close
 model: sonnet
 handoffs:
   - label: Delegate to Edna (UX + Frontend)

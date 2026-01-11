@@ -10,6 +10,11 @@ tools:
   - Write
   - Edit
   - Bash
+  - Glob
+  - Grep
+  - WebSearch
+  - mcp__web-search-prime__webSearchPrime
+  - mcp__web_reader__webReader
 model: sonnet
 handoffs:
   - label: Optimize delivery (Han)

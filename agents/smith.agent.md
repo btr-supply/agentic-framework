@@ -10,6 +10,10 @@ tools:
   - Write
   - Edit
   - Bash
+  - Grep
+  - Glob
+  - WebSearch
+  - mcp__web-search-prime__webSearchPrime
 model: sonnet
 handoffs:
   - label: Validate defenses (Deckard)

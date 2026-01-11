@@ -10,6 +10,10 @@ tools:
   - Write
   - Edit
   - Bash
+  - Glob
+  - Grep
+  - WebSearch
+  - mcp__web-search-prime__webSearchPrime
 model: sonnet
 ---
 

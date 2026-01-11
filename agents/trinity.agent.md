@@ -9,6 +9,10 @@ tools:
   - Read
   - Grep
   - Glob
+  - Write
+  - Edit
+  - WebSearch
+  - mcp__web-search-prime__webSearchPrime
 model: sonnet
 handoffs:
   - label: Deep audit (Deckard)

@@ -10,6 +10,16 @@ tools:
   - Write
   - Edit
   - Bash
+  - Glob
+  - Grep
+  - WebSearch
+  - mcp__web-search-prime__webSearchPrime
+  - mcp__playwright__browser_navigate
+  - mcp__playwright__browser_snapshot
+  - mcp__playwright__browser_click
+  - mcp__playwright__browser_type
+  - mcp__playwright__browser_take_screenshot
+  - mcp__playwright__browser_close
 model: sonnet
 handoffs:
   - label: Optimize performance (Moebius)

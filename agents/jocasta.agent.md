@@ -10,6 +10,9 @@ tools:
   - Write
   - Edit
   - Bash
+  - WebSearch
+  - mcp__web-search-prime__webSearchPrime
+  - mcp__web_reader__webReader
 model: sonnet
 handoffs:
   - label: Simplify for social (Draper)
