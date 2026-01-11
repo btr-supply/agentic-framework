@@ -194,6 +194,29 @@ Co-Authored / Generated with Claude (never mention AI)
 
 ---
 
+## Releases and Versioning
+
+**Version Tags:**
+- Use semantic versioning: `v1.0.0`, `v1.1.0`, `v2.0.0`
+- The `latest` tag always points to the most recent stable release
+
+**Creating a New Release:**
+
+1. Update `package.json` version
+2. Update version references in README.md
+3. Commit changes: `[ops] Bump version to vX.Y.Z`
+4. Create version tag: `git tag -a vX.Y.Z -m "Release vX.Y.Z"`
+5. Move `latest` tag: `git tag -fa latest -m "Alias for latest stable release (currently vX.Y.Z)"`
+6. Push: `git push origin main --tags` or `git push -f origin latest`
+7. Create GitHub Release: `gh release create vX.Y.Z --title "vX.Y.Z - Title" --notes "..."`
+
+**Semantic Versioning:**
+- `v1.0.0` → `v1.0.1`: Patch (bug fixes)
+- `v1.0.0` → `v1.1.0`: Minor (new features, backward compatible)
+- `v1.0.0` → `v2.0.0`: Major (breaking changes)
+
+---
+
 ## Agent Git Identity
 
 **⚠️ Always use the user's git identity**

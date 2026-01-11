@@ -10,30 +10,32 @@ BTR-AF installs **locally** by default (in your current directory). Use `--globa
 
 ### Quick Install (Local)
 
-Install to current directory's `.claude/` or `.vscode/` folder:
+Install to current directory's `.claude/` or `.vscode/` folder.
+
+**Recommended - use `latest` tag for stable releases:**
 
 **Claude Code (macOS / Linux):**
 ```bash
 cd /path/to/your/project
-curl -fsSL https://raw.githubusercontent.com/btr-supply/agentic-framework/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/btr-supply/agentic-framework/latest/install.sh | bash
 ```
 
 **Claude Code (Windows PowerShell):**
 ```powershell
 cd C:\path\to\your\project
-irm https://raw.githubusercontent.com/btr-supply/agentic-framework/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/btr-supply/agentic-framework/latest/install.ps1 | iex
 ```
 
 **VS Code (macOS / Linux):**
 ```bash
 cd /path/to/your/project
-curl -fsSL https://raw.githubusercontent.com/btr-supply/agentic-framework/main/install.sh | bash -s -- --target=vscode
+curl -fsSL https://raw.githubusercontent.com/btr-supply/agentic-framework/latest/install.sh | bash -s -- --target=vscode
 ```
 
 **VS Code (Windows PowerShell):**
 ```powershell
 cd C:\path\to\your\project
-irm https://raw.githubusercontent.com/btr-supply/agentic-framework/main/install.ps1 | iex -Target vscode
+irm https://raw.githubusercontent.com/btr-supply/agentic-framework/latest/install.ps1 | iex -Target vscode
 ```
 
 ### Global Install
@@ -42,37 +44,39 @@ Install to user home directory (`~/.claude/` or `~/.vscode/`):
 
 **macOS / Linux:**
 ```bash
-curl -fsSL https://raw.githubusercontent.com/btr-supply/agentic-framework/main/install.sh | bash -s -- --global
+curl -fsSL https://raw.githubusercontent.com/btr-supply/agentic-framework/latest/install.sh | bash -s -- --global
 ```
 
 **Windows PowerShell:**
 ```powershell
-irm https://raw.githubusercontent.com/btr-supply/agentic-framework/main/install.ps1 | iex -Global
+irm https://raw.githubusercontent.com/btr-supply/agentic-framework/latest/install.ps1 | iex -Global
 ```
 
 ### Install Specific Version
 
+Use a specific version tag (`v1.0.1`, `v1.0.0`, etc.) instead of `latest` for reproducible installs:
+
 **Local with version:**
 ```bash
 # Claude Code
-curl -fsSL https://raw.githubusercontent.com/btr-supply/agentic-framework/main/install.sh | bash -s -- v1.0.1
+curl -fsSL https://raw.githubusercontent.com/btr-supply/agentic-framework/v1.0.1/install.sh | bash -s -- v1.0.1
 
 # VS Code
-curl -fsSL https://raw.githubusercontent.com/btr-supply/agentic-framework/main/install.sh | bash -s -- --target=vscode v1.0.1
+curl -fsSL https://raw.githubusercontent.com/btr-supply/agentic-framework/v1.0.1/install.sh | bash -s -- --target=vscode v1.0.1
 ```
 
 **Global with version:**
 ```bash
-curl -fsSL https://raw.githubusercontent.com/btr-supply/agentic-framework/main/install.sh | bash -s -- --global v1.0.1
+curl -fsSL https://raw.githubusercontent.com/btr-supply/agentic-framework/v1.0.1/install.sh | bash -s -- --global v1.0.1
 ```
 
 **Windows PowerShell:**
 ```powershell
 # Local
-irm https://raw.githubusercontent.com/btr-supply/agentic-framework/main/install.ps1 | iex -Version v1.0.1
+irm https://raw.githubusercontent.com/btr-supply/agentic-framework/v1.0.1/install.ps1 | iex -Version v1.0.1
 
 # Global
-irm https://raw.githubusercontent.com/btr-supply/agentic-framework/main/install.ps1 | iex -Global -Version v1.0.1
+irm https://raw.githubusercontent.com/btr-supply/agentic-framework/v1.0.1/install.ps1 | iex -Global -Version v1.0.1
 ```
 
 ### Manual Installation
@@ -97,29 +101,29 @@ irm https://raw.githubusercontent.com/btr-supply/agentic-framework/main/install.
 ```bash
 # macOS / Linux
 cd /path/to/your/project
-curl -fsSL https://raw.githubusercontent.com/btr-supply/agentic-framework/main/uninstall.sh | bash
+curl -fsSL https://raw.githubusercontent.com/btr-supply/agentic-framework/latest/uninstall.sh | bash
 
 # Windows PowerShell
 cd C:\path\to\your\project
-irm https://raw.githubusercontent.com/btr-supply/agentic-framework/main/uninstall.ps1 | iex
+irm https://raw.githubusercontent.com/btr-supply/agentic-framework/latest/uninstall.ps1 | iex
 ```
 
 **Uninstall global installation:**
 ```bash
 # macOS / Linux
-curl -fsSL https://raw.githubusercontent.com/btr-supply/agentic-framework/main/uninstall.sh | bash -s -- --global
+curl -fsSL https://raw.githubusercontent.com/btr-supply/agentic-framework/latest/uninstall.sh | bash -s -- --global
 
 # Windows PowerShell
-irm https://raw.githubusercontent.com/btr-supply/agentic-framework/main/uninstall.ps1 | iex -Global
+irm https://raw.githubusercontent.com/btr-supply/agentic-framework/latest/uninstall.ps1 | iex -Global
 ```
 
 **Skip confirmation:**
 ```bash
 # macOS / Linux
-curl -fsSL https://raw.githubusercontent.com/btr-supply/agentic-framework/main/uninstall.sh | bash -s -- --yes
+curl -fsSL https://raw.githubusercontent.com/btr-supply/agentic-framework/latest/uninstall.sh | bash -s -- --yes
 
 # Windows PowerShell
-irm https://raw.githubusercontent.com/btr-supply/agentic-framework/main/uninstall.ps1 | iex -Yes
+irm https://raw.githubusercontent.com/btr-supply/agentic-framework/latest/uninstall.ps1 | iex -Yes
 ```
 
 ### Manual Uninstallation
