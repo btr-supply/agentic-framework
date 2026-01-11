@@ -199,21 +199,106 @@ Co-Authored / Generated with Claude (never mention AI)
 **Version Tags:**
 - Use semantic versioning: `v1.0.0`, `v1.1.0`, `v2.0.0`
 - The `latest` tag always points to the most recent stable release
+- Users can install with `latest` for convenience or specific versions for reproducibility
+
+**Semantic Versioning:**
+- `v1.0.0` → `v1.0.1`: Patch (bug fixes, documentation)
+- `v1.0.0` → `v1.1.0`: Minor (new features, backward compatible)
+- `v1.0.0` → `v2.0.0`: Major (breaking changes)
 
 **Creating a New Release:**
 
-1. Update `package.json` version
-2. Update version references in README.md
-3. Commit changes: `[ops] Bump version to vX.Y.Z`
-4. Create version tag: `git tag -a vX.Y.Z -m "Release vX.Y.Z"`
-5. Move `latest` tag: `git tag -fa latest -m "Alias for latest stable release (currently vX.Y.Z)"`
-6. Push: `git push origin main --tags` or `git push -f origin latest`
-7. Create GitHub Release: `gh release create vX.Y.Z --title "vX.Y.Z - Title" --notes "..."`
+1. **Make and test your changes** on the `main` branch
 
-**Semantic Versioning:**
-- `v1.0.0` → `v1.0.1`: Patch (bug fixes)
-- `v1.0.0` → `v1.1.0`: Minor (new features, backward compatible)
-- `v1.0.0` → `v2.0.0`: Major (breaking changes)
+2. **Update version in package.json:**
+   ```bash
+   # Edit package.json, change version field
+   ```
+
+3. **Update version references in README.md:**
+   ```bash
+   # Replace old version (e.g., v1.0.1) with new version (e.g., v1.0.2) in examples
+   ```
+
+4. **Commit version bump:**
+   ```bash
+   git add package.json README.md
+   git commit -m "[ops] Bump version to vX.Y.Z"
+   git push origin main
+   ```
+
+5. **Create version tag:**
+   ```bash
+   git tag -a vX.Y.Z -m "BTR-AF vX.Y.Z - Brief description"
+   git push origin vX.Y.Z
+   ```
+
+6. **Move the `latest` tag:**
+   ```bash
+   # Delete old latest tag locally
+   git tag -d latest
+
+   # Create new latest tag pointing to the new version (use ^{} to point to commit, not tag)
+   git tag -a latest -m "Alias for latest stable release (currently vX.Y.Z)" vX.Y.Z^{}
+
+   # Force push latest tag to remote
+   git push -f origin latest
+   ```
+
+7. **Create GitHub Release:**
+   ```bash
+   gh release create vX.Y.Z \
+     --title "vX.Y.Z - Release Title" \
+     --notes "## Changes
+
+   - Feature or fix 1
+   - Feature or fix 2
+
+   ## Installation
+
+   See README.md for installation instructions."
+   ```
+
+8. **Verify:**
+   ```bash
+   # Check that latest and vX.Y.Z point to the same commit
+   git rev-parse latest^{}
+   git rev-parse vX.Y.Z^{}
+
+   # Should output the same commit hash
+   ```
+
+**Example Release Workflow:**
+
+```bash
+# Bump version to v1.0.2
+vim package.json  # Change version to 1.0.2
+vim README.md     # Update v1.0.1 → v1.0.2 in examples
+
+git add package.json README.md
+git commit -m "[ops] Bump version to v1.0.2"
+git push origin main
+
+# Create version tag
+git tag -a v1.0.2 -m "BTR-AF v1.0.2 - Bug fixes and improvements"
+git push origin v1.0.2
+
+# Move latest tag
+git tag -d latest
+git tag -a latest -m "Alias for latest stable release (currently v1.0.2)" v1.0.2^{}
+git push -f origin latest
+
+# Create GitHub Release
+gh release create v1.0.2 --title "v1.0.2 - Bug Fixes" --notes "..."
+
+# Verify
+git rev-parse latest^{} && git rev-parse v1.0.2^{}
+```
+
+**Important Notes:**
+- Always use `vX.Y.Z^{}` when creating the `latest` tag to point to the commit, not the tag object
+- Force push is required for `latest` tag since it moves to different commits
+- The `latest` tag should only point to stable releases, never to `main` branch directly
 
 ---
 
