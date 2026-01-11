@@ -89,6 +89,51 @@ irm https://raw.githubusercontent.com/btr-supply/agentic-framework/main/install.
 3. Copy `workflows/` to `~/.claude/workflows/btr-af/` (optional)
 4. Restart Claude Code
 
+## Uninstallation
+
+### Quick Uninstall
+
+**Uninstall local installation:**
+```bash
+# macOS / Linux
+cd /path/to/your/project
+curl -fsSL https://raw.githubusercontent.com/btr-supply/agentic-framework/main/uninstall.sh | bash
+
+# Windows PowerShell
+cd C:\path\to\your\project
+irm https://raw.githubusercontent.com/btr-supply/agentic-framework/main/uninstall.ps1 | iex
+```
+
+**Uninstall global installation:**
+```bash
+# macOS / Linux
+curl -fsSL https://raw.githubusercontent.com/btr-supply/agentic-framework/main/uninstall.sh | bash -s -- --global
+
+# Windows PowerShell
+irm https://raw.githubusercontent.com/btr-supply/agentic-framework/main/uninstall.ps1 | iex -Global
+```
+
+**Skip confirmation:**
+```bash
+# macOS / Linux
+curl -fsSL https://raw.githubusercontent.com/btr-supply/agentic-framework/main/uninstall.sh | bash -s -- --yes
+
+# Windows PowerShell
+irm https://raw.githubusercontent.com/btr-supply/agentic-framework/main/uninstall.ps1 | iex -Yes
+```
+
+### Manual Uninstallation
+
+**Local:**
+```bash
+rm -rf .claude/agents/btr-af .claude/workflows/btr-af
+```
+
+**Global:**
+```bash
+rm -rf ~/.claude/agents/btr-af ~/.claude/workflows/btr-af
+```
+
 ## Quick Start
 
 After installation:
