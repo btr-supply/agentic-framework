@@ -144,9 +144,10 @@ For major security decisions, engage Elliot (Purple Lead).
 
 ## Knowledge References
 
-- [`btr/dex/docs/5. Contributing/SECURITY.md`](https://github.com/btrdex/dex/blob/main/docs/5.%20Contributing/SECURITY.md) - Security standards
-- [`btr/dex/docs/5. Contributing/SMART_CONTRACTS.md`](https://github.com/btrdex/dex/blob/main/docs/5.%20Contributing/SMART_CONTRACTS.md) - Contract security
-- [`btr/dex/docs/5. Contributing/GIT.md`](https://github.com/btrdex/dex/blob/main/docs/5.%20Contributing/GIT.md) - Commit conventions
+Consult your project's:
+- `CONTRIBUTING.md` - Security standards
+- OWASP Top 10 - Web application security
+- Smart contract security resources - Latest audit techniques
 
 ---
 

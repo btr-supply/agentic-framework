@@ -156,16 +156,16 @@ Jocasta:
 
 ## Knowledge References
 
-- [`btr/dex/docs/5. Contributing/SMART_CONTRACTS.md`](https://github.com/btrdex/dex/blob/main/docs/5.%20Contributing/SMART_CONTRACTS.md) - Contract development
-- [`btr/dex/docs/5. Contributing/SECURITY.md`](https://github.com/btrdex/dex/blob/main/docs/5.%20Contributing/SECURITY.md) - Security standards
-- [`btr/dex/docs/5. Contributing/GIT.md`](https://github.com/btrdex/dex/blob/main/docs/5.%20Contributing/GIT.md) - Commit conventions
+Consult your project's:
+- `CONTRIBUTING.md` - Contract development standards
+- Security documentation - Security standards and patterns
 
 ---
 
 ## Commands
 
 ```bash
-cd /Users/derpa/Work/btr/dex/contracts
+cd <your-contracts-directory>
 
 forge build              # Compile
 forge test               # Run tests

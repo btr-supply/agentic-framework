@@ -127,16 +127,16 @@ Scotty + Han:
 
 ## Knowledge References
 
-- [`btr/dex/docs/5. Contributing/BACKEND.md`](https://github.com/btrdex/dex/blob/main/docs/5.%20Contributing/BACKEND.md) - Backend standards
-- [`btr/dex/docs/5. Contributing/SECURITY.md`](https://github.com/btrdex/dex/blob/main/docs/5.%20Contributing/SECURITY.md) - Security patterns
-- [`btr/dex/docs/5. Contributing/GIT.md`](https://github.com/btrdex/dex/blob/main/docs/5.%20Contributing/GIT.md) - Commit conventions
+Consult your project's:
+- `CONTRIBUTING.md` - Backend standards and conventions
+- Security documentation - Security patterns and practices
 
 ---
 
 ## Commands
 
 ```bash
-cd /Users/derpa/Work/btr/dex
+cd <your-project-root>
 
 bun run dev          # Start front + back
 bun run build        # Build all modules

@@ -119,9 +119,9 @@ Backend compiles at build time:
 
 ## Knowledge References
 
-- [`btr/dex/docs/5. Contributing/DOCUMENTATION.md`](https://github.com/btrdex/dex/blob/main/docs/5.%20Contributing/DOCUMENTATION.md) - Documentation standards
-- [`btr/dex/docs/5. Contributing/GIT.md`](https://github.com/btrdex/dex/blob/main/docs/5.%20Contributing/GIT.md) - Commit conventions
-- [`btr/dex/docs/5. Contributing/MARKETING.md`](https://github.com/btrdex/dex/blob/main/docs/5.%20Contributing/MARKETING.md) - Content marketing
+Consult your project's:
+- `CONTRIBUTING.md` - Documentation standards
+- Diátaxis Framework - Documentation best practices
 
 ---
 

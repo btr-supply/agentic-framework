@@ -119,15 +119,16 @@ Jocasta:
 
 ## Knowledge References
 
-- [`btr/dex/docs/5. Contributing/FRONTEND.md`](https://github.com/btrdex/dex/blob/main/docs/5.%20Contributing/FRONTEND.md) - Frontend standards
-- [`btr/dex/docs/5. Contributing/GIT.md`](https://github.com/btrdex/dex/blob/main/docs/5.%20Contributing/GIT.md) - Commit conventions
+Consult your project's:
+- `CONTRIBUTING.md` - Frontend standards and conventions
+- Framework documentation for your chosen stack
 
 ---
 
 ## Commands
 
 ```bash
-cd /Users/derpa/Work/btr/dex/front
+cd <your-frontend-directory>
 
 bun run dev          # Development server
 bun run typecheck    # Type check (tsgo)

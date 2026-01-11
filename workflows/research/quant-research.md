@@ -102,9 +102,9 @@ Jocasta:
 
 ## Knowledge References
 
-- [`btr/dex/docs/5. Contributing/QUANT.md`](https://github.com/btrdex/dex/blob/main/docs/5.%20Contributing/QUANT.md) - Quant research standards
-- [`btr/dex/docs/5. Contributing/GIT.md`](https://github.com/btrdex/dex/blob/main/docs/5.%20Contributing/GIT.md) - Commit conventions
-- [`btr/dex/docs/5. Contributing/ARCHITECTURE.md`](https://github.com/btrdex/dex/blob/main/docs/5.%20Contributing/ARCHITECTURE.md) - System architecture
+Consult your project's:
+- `CONTRIBUTING.md` - Quant research standards
+- Academic resources - Latest papers, mathematical foundations
 
 ---
 

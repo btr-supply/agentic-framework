@@ -116,11 +116,12 @@ Draper optimizes based on data
 
 ## Key Messages
 
-1. **Single-sided LP**: Deposit one token, receive fungible LP tokens
-2. **Capital efficiency**: Higher returns per dollar
-3. **Multi-asset**: Trade any-to-any through anchor tree
-4. **Cooperative arbitrage**: Profits return to LPs
-5. **Security first**: Audited, battle-tested
+Replace with your project's key value propositions:
+1. **Feature 1**: Primary user benefit
+2. **Feature 2**: Secondary user benefit
+3. **Feature 3**: Differentiator from competitors
+4. **Feature 4**: Trust/credibility signal
+5. **Feature 5**: Call-to-action or incentive
 
 ---
 
@@ -149,9 +150,9 @@ Draper optimizes based on data
 
 ## Knowledge References
 
-- [`btr/dex/docs/5. Contributing/MARKETING.md`](https://github.com/btrdex/dex/blob/main/docs/5.%20Contributing/MARKETING.md) - Marketing standards
-- [`btr/dex/docs/5. Contributing/DOCUMENTATION.md`](https://github.com/btrdex/dex/blob/main/docs/5.%20Contributing/DOCUMENTATION.md) - Content creation
-- [`btr/dex/docs/5. Contributing/GIT.md`](https://github.com/btrdex/dex/blob/main/docs/5.%20Contributing/GIT.md) - Commit conventions
+Consult your project's:
+- `CONTRIBUTING.md` - Marketing standards and conventions
+- Brand guidelines - Voice, tone, visual identity
 
 ---
 

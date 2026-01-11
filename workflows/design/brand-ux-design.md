@@ -106,9 +106,9 @@ Moebius implements (Edna reviews):
 
 ## Knowledge References
 
-- [`btr/dex/docs/5. Contributing/FRONTEND.md`](https://github.com/btrdex/dex/blob/main/docs/5.%20Contributing/FRONTEND.md) - Frontend standards
-- [`btr/dex/docs/5. Contributing/GIT.md`](https://github.com/btrdex/dex/blob/main/docs/5.%20Contributing/GIT.md) - Commit conventions
-- [`btr/dex/docs/5. Contributing/ARCHITECTURE.md`](https://github.com/btrdex/dex/blob/main/docs/5.%20Contributing/ARCHITECTURE.md) - Architecture patterns
+Consult your project's:
+- `CONTRIBUTING.md` - Frontend standards and conventions
+- Design system documentation - Visual identity guidelines
 
 ---
 
