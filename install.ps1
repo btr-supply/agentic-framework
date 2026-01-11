@@ -1,8 +1,12 @@
-# BTR-AF Installer for Claude Code (Windows)
+# BTR-AF Installer (Windows)
+# Supports: Claude Code, VS Code
 # Requires: PowerShell 5.1+ (built-in on Windows 10+)
 
 param(
-    [string]$Version = $null
+    [string]$Version = $null,
+    [ValidateSet("claude", "vscode")]
+    [string]$Target = "claude",
+    [switch]$Global = $false
 )
 
 $ErrorActionPreference = "Stop"
@@ -10,7 +14,7 @@ $ErrorActionPreference = "Stop"
 # Configuration
 $Repo = "btr-supply/agentic-framework"
 $GitHubAPI = "https://api.github.com/repos/$Repo"
-$ClaudeDir = Join-Path $env:USERPROFILE ".claude\agents\btr-af"
+$Scope = if ($Global) { "global" } else { "local" }
 
 # Colors
 function Write-Info { Write-Host "✓ $args" -ForegroundColor Green }
@@ -29,8 +33,31 @@ function Get-LatestTag {
 
 # Main installation
 function Main {
-    Write-Host "BTR-AF Installer for Claude Code" -ForegroundColor Cyan
-    Write-Host "=================================" -ForegroundColor Cyan
+    # Set installation directories based on target and scope
+    if ($Target -eq "claude") {
+        if ($Scope -eq "global") {
+            $AgentDir = Join-Path $env:USERPROFILE ".claude\agents\btr-af"
+            $WorkflowDir = Join-Path $env:USERPROFILE ".claude\workflows\btr-af"
+            $InstallName = "Claude Code (global)"
+        } else {
+            $AgentDir = ".claude\agents\btr-af"
+            $WorkflowDir = ".claude\workflows\btr-af"
+            $InstallName = "Claude Code (local)"
+        }
+    } else {
+        if ($Scope -eq "global") {
+            $AgentDir = Join-Path $env:USERPROFILE ".vscode\agents\btr-af"
+            $WorkflowDir = $null  # VS Code doesn't use workflows directory
+            $InstallName = "VS Code (global)"
+        } else {
+            $AgentDir = ".vscode\agents\btr-af"
+            $WorkflowDir = $null  # VS Code doesn't use workflows directory
+            $InstallName = "VS Code (local)"
+        }
+    }
+
+    Write-Host "BTR-AF Installer for $InstallName" -ForegroundColor Cyan
+    Write-Host ("=" * (23 + $InstallName.Length)) -ForegroundColor Cyan
     Write-Host ""
 
     # Get version
@@ -43,10 +70,11 @@ function Main {
         }
     }
     Write-Info "Installing version: $Version"
+    Write-Info "Target: $InstallName"
 
     # Create directory
     Write-Info "Creating installation directory..."
-    New-Item -ItemType Directory -Force -Path $ClaudeDir | Out-Null
+    New-Item -ItemType Directory -Force -Path $AgentDir | Out-Null
 
     # Download agents
     Write-Info "Downloading agent files..."
@@ -70,29 +98,47 @@ function Main {
         # Copy agent files
         $AgentsPath = Join-Path $ExtractedDir.FullName "agents"
         if (Test-Path $AgentsPath) {
-            Copy-Item -Path "$AgentsPath\*" -Destination $ClaudeDir -Recurse -Force
-            Write-Info "Agents installed to: $ClaudeDir"
+            Copy-Item -Path "$AgentsPath\*" -Destination $AgentDir -Recurse -Force
+            Write-Info "Agents installed to: $AgentDir"
         } else {
             Write-Err "Agents directory not found in repository"
         }
 
-        # Copy workflows (optional)
-        $WorkflowsPath = Join-Path $ExtractedDir.FullName "workflows"
-        if (Test-Path $WorkflowsPath) {
-            $WorkflowDir = Join-Path $env:USERPROFILE ".claude\workflows\btr-af"
-            New-Item -ItemType Directory -Force -Path $WorkflowDir | Out-Null
-            Copy-Item -Path "$WorkflowsPath\*" -Destination $WorkflowDir -Recurse -Force
-            Write-Info "Workflows installed to: $WorkflowDir"
+        # Copy workflows (Claude Code only)
+        if ($Target -eq "claude" -and $WorkflowDir) {
+            $WorkflowsPath = Join-Path $ExtractedDir.FullName "workflows"
+            if (Test-Path $WorkflowsPath) {
+                New-Item -ItemType Directory -Force -Path $WorkflowDir | Out-Null
+                Copy-Item -Path "$WorkflowsPath\*" -Destination $WorkflowDir -Recurse -Force
+                Write-Info "Workflows installed to: $WorkflowDir"
+            }
         }
 
         # Installation complete
         Write-Host ""
         Write-Info "Installation complete!"
         Write-Host ""
-        Write-Host "Next steps:"
-        Write-Host "  1. Restart Claude Code or reload your IDE"
-        Write-Host "  2. Agents will appear in your .claude/agents/btr-af/ directory"
-        Write-Host "  3. Use @sibyl to orchestrate the elite team"
+
+        if ($Target -eq "claude") {
+            Write-Host "Next steps:"
+            Write-Host "  1. Restart Claude Code or reload your IDE"
+            if ($Scope -eq "global") {
+                Write-Host "  2. Agents installed globally in ~/.claude/agents/btr-af/"
+            } else {
+                Write-Host "  2. Agents installed locally in $(Get-Location)\.claude\agents\btr-af\"
+            }
+            Write-Host "  3. Use @sibyl to orchestrate the elite team"
+        } else {
+            Write-Host "Next steps:"
+            Write-Host "  1. Restart VS Code or reload the window"
+            if ($Scope -eq "global") {
+                Write-Host "  2. Agents installed globally in ~/.vscode/agents/btr-af/"
+            } else {
+                Write-Host "  2. Agents installed locally in $(Get-Location)\.vscode\agents\btr-af\"
+            }
+            Write-Host "  3. Configure your AI extension to use these agents"
+        }
+
         Write-Host ""
         Write-Host "Documentation: https://github.com/$Repo"
 

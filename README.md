@@ -6,30 +6,88 @@ BTR-AF provides 19 elite AI agents (industry top 0.001%) for institutional-grade
 
 ## Installation
 
-### Claude Code
+BTR-AF installs **locally** by default (in your current directory). Use `--global` for user-wide installation.
 
-**macOS / Linux:**
+### Quick Install (Local)
+
+Install to current directory's `.claude/` or `.vscode/` folder:
+
+**Claude Code (macOS / Linux):**
 ```bash
+cd /path/to/your/project
 curl -fsSL https://raw.githubusercontent.com/btr-supply/agentic-framework/main/install.sh | bash
 ```
 
-**Windows (PowerShell):**
+**Claude Code (Windows PowerShell):**
 ```powershell
+cd C:\path\to\your\project
 irm https://raw.githubusercontent.com/btr-supply/agentic-framework/main/install.ps1 | iex
 ```
 
-**Manual Installation:**
+**VS Code (macOS / Linux):**
+```bash
+cd /path/to/your/project
+curl -fsSL https://raw.githubusercontent.com/btr-supply/agentic-framework/main/install.sh | bash -s -- --target=vscode
+```
+
+**VS Code (Windows PowerShell):**
+```powershell
+cd C:\path\to\your\project
+irm https://raw.githubusercontent.com/btr-supply/agentic-framework/main/install.ps1 | iex -Target vscode
+```
+
+### Global Install
+
+Install to user home directory (`~/.claude/` or `~/.vscode/`):
+
+**macOS / Linux:**
+```bash
+curl -fsSL https://raw.githubusercontent.com/btr-supply/agentic-framework/main/install.sh | bash -s -- --global
+```
+
+**Windows PowerShell:**
+```powershell
+irm https://raw.githubusercontent.com/btr-supply/agentic-framework/main/install.ps1 | iex -Global
+```
+
+### Install Specific Version
+
+**Local with version:**
+```bash
+# Claude Code
+curl -fsSL https://raw.githubusercontent.com/btr-supply/agentic-framework/main/install.sh | bash -s -- v1.0.0
+
+# VS Code
+curl -fsSL https://raw.githubusercontent.com/btr-supply/agentic-framework/main/install.sh | bash -s -- --target=vscode v1.0.0
+```
+
+**Global with version:**
+```bash
+curl -fsSL https://raw.githubusercontent.com/btr-supply/agentic-framework/main/install.sh | bash -s -- --global v1.0.0
+```
+
+**Windows PowerShell:**
+```powershell
+# Local
+irm https://raw.githubusercontent.com/btr-supply/agentic-framework/main/install.ps1 | iex -Version v1.0.0
+
+# Global
+irm https://raw.githubusercontent.com/btr-supply/agentic-framework/main/install.ps1 | iex -Global -Version v1.0.0
+```
+
+### Manual Installation
+
+**Local (project-specific):**
+1. Clone this repository
+2. Copy `agents/` to `.claude/agents/btr-af/` in your project
+3. Copy `workflows/` to `.claude/workflows/btr-af/` (optional)
+4. Restart Claude Code
+
+**Global (user-wide):**
 1. Clone this repository
 2. Copy `agents/` to `~/.claude/agents/btr-af/`
 3. Copy `workflows/` to `~/.claude/workflows/btr-af/` (optional)
 4. Restart Claude Code
-
-### VS Code (with GitHub Copilot or Cline)
-
-**Manual Installation:**
-1. Clone this repository
-2. Copy agent files to your project's `.vscode/agents/` directory
-3. Configure your AI extension to use these agents
 
 ## Quick Start
 

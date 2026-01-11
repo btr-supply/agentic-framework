@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# BTR-AF Installer for Claude Code
-# Supports: macOS, Linux
+# BTR-AF Installer
+# Supports: Claude Code, VS Code, macOS, Linux
 # Dependencies: None (uses only POSIX shell builtins + curl/wget)
 
 set -e
@@ -14,12 +14,40 @@ NC='\033[0m' # No Color
 # Configuration
 REPO="btr-supply/agentic-framework"
 GITHUB_API="https://api.github.com/repos/${REPO}"
-CLAUDE_DIR="${HOME}/.claude/agents/btr-af"
+TARGET="claude"  # Default target
+SCOPE="local"    # Default scope: local or global
+VERSION=""
 
 # Utility functions
 info() { printf "${GREEN}✓${NC} %s\n" "$1"; }
 warn() { printf "${YELLOW}⚠${NC} %s\n" "$1"; }
 error() { printf "${RED}✗${NC} %s\n" "$1" >&2; exit 1; }
+
+# Show usage
+show_usage() {
+    cat << EOF
+BTR-AF Installer
+
+Usage: $0 [OPTIONS] [VERSION]
+
+Options:
+  --target=TARGET    Installation target: 'claude' or 'vscode' (default: claude)
+  --global           Install globally to user home directory (default: local)
+  --help             Show this help message
+
+Arguments:
+  VERSION            Version tag to install (default: latest release)
+
+Examples:
+  $0                          # Install latest locally (.claude/agents/btr-af/)
+  $0 --global                 # Install latest globally (~/.claude/agents/btr-af/)
+  $0 --target=vscode          # Install latest to VS Code locally
+  $0 v1.0.0                   # Install v1.0.0 locally
+  $0 --global v1.0.0          # Install v1.0.0 globally
+
+EOF
+    exit 0
+}
 
 # Check if command exists
 has_command() {
@@ -55,22 +83,74 @@ get_latest_tag() {
 
 # Main installation
 main() {
-    echo "BTR-AF Installer for Claude Code"
-    echo "================================="
+    # Parse arguments
+    while [ $# -gt 0 ]; do
+        case "$1" in
+            --target=*)
+                TARGET="${1#*=}"
+                shift
+                ;;
+            --global)
+                SCOPE="global"
+                shift
+                ;;
+            --help)
+                show_usage
+                ;;
+            *)
+                VERSION="$1"
+                shift
+                ;;
+        esac
+    done
+
+    # Validate target
+    if [ "$TARGET" != "claude" ] && [ "$TARGET" != "vscode" ]; then
+        error "Invalid target: $TARGET. Must be 'claude' or 'vscode'"
+    fi
+
+    # Set installation directories based on target and scope
+    if [ "$TARGET" = "claude" ]; then
+        if [ "$SCOPE" = "global" ]; then
+            AGENT_DIR="${HOME}/.claude/agents/btr-af"
+            WORKFLOW_DIR="${HOME}/.claude/workflows/btr-af"
+            INSTALL_NAME="Claude Code (global)"
+        else
+            AGENT_DIR=".claude/agents/btr-af"
+            WORKFLOW_DIR=".claude/workflows/btr-af"
+            INSTALL_NAME="Claude Code (local)"
+        fi
+    else
+        if [ "$SCOPE" = "global" ]; then
+            AGENT_DIR="${HOME}/.vscode/agents/btr-af"
+            WORKFLOW_DIR=""  # VS Code doesn't use workflows directory
+            INSTALL_NAME="VS Code (global)"
+        else
+            AGENT_DIR=".vscode/agents/btr-af"
+            WORKFLOW_DIR=""  # VS Code doesn't use workflows directory
+            INSTALL_NAME="VS Code (local)"
+        fi
+    fi
+
+    echo "BTR-AF Installer for $INSTALL_NAME"
+    echo "===================================="
     echo ""
 
     # Get version
     info "Fetching latest version..."
-    VERSION="${1:-$(get_latest_tag)}"
+    if [ -z "$VERSION" ]; then
+        VERSION=$(get_latest_tag)
+    fi
     if [ -z "$VERSION" ]; then
         VERSION="main"
         warn "Could not determine latest version, using 'main' branch"
     fi
     info "Installing version: $VERSION"
+    info "Target: $INSTALL_NAME"
 
     # Create directory
     info "Creating installation directory..."
-    mkdir -p "$CLAUDE_DIR"
+    mkdir -p "$AGENT_DIR"
 
     # Download agents
     info "Downloading agent files..."
@@ -92,15 +172,14 @@ main() {
 
     # Copy agent files
     if [ -d "${EXTRACTED_DIR}/agents" ]; then
-        cp -r "${EXTRACTED_DIR}/agents/"* "$CLAUDE_DIR/"
-        info "Agents installed to: $CLAUDE_DIR"
+        cp -r "${EXTRACTED_DIR}/agents/"* "$AGENT_DIR/"
+        info "Agents installed to: $AGENT_DIR"
     else
         error "Agents directory not found in repository"
     fi
 
-    # Copy workflows (optional)
-    if [ -d "${EXTRACTED_DIR}/workflows" ]; then
-        WORKFLOW_DIR="${HOME}/.claude/workflows/btr-af"
+    # Copy workflows (Claude Code only)
+    if [ "$TARGET" = "claude" ] && [ -n "$WORKFLOW_DIR" ] && [ -d "${EXTRACTED_DIR}/workflows" ]; then
         mkdir -p "$WORKFLOW_DIR"
         cp -r "${EXTRACTED_DIR}/workflows/"* "$WORKFLOW_DIR/"
         info "Workflows installed to: $WORKFLOW_DIR"
@@ -110,10 +189,27 @@ main() {
     echo ""
     info "Installation complete!"
     echo ""
-    echo "Next steps:"
-    echo "  1. Restart Claude Code or reload your IDE"
-    echo "  2. Agents will appear in your .claude/agents/btr-af/ directory"
-    echo "  3. Use @sibyl to orchestrate the elite team"
+
+    if [ "$TARGET" = "claude" ]; then
+        echo "Next steps:"
+        echo "  1. Restart Claude Code or reload your IDE"
+        if [ "$SCOPE" = "global" ]; then
+            echo "  2. Agents installed globally in ~/.claude/agents/btr-af/"
+        else
+            echo "  2. Agents installed locally in $(pwd)/.claude/agents/btr-af/"
+        fi
+        echo "  3. Use @sibyl to orchestrate the elite team"
+    else
+        echo "Next steps:"
+        echo "  1. Restart VS Code or reload the window"
+        if [ "$SCOPE" = "global" ]; then
+            echo "  2. Agents installed globally in ~/.vscode/agents/btr-af/"
+        else
+            echo "  2. Agents installed locally in $(pwd)/.vscode/agents/btr-af/"
+        fi
+        echo "  3. Configure your AI extension to use these agents"
+    fi
+
     echo ""
     echo "Documentation: https://github.com/${REPO}"
 }
