@@ -36,11 +36,11 @@ function Main {
     # Set installation directories based on target and scope
     if ($Target -eq "claude") {
         if ($Scope -eq "global") {
-            $AgentDir = Join-Path $env:USERPROFILE ".claude\agents\btr-af"
+            $AgentDir = Join-Path $env:USERPROFILE ".claude\agents"
             $WorkflowDir = Join-Path $env:USERPROFILE ".claude\workflows\btr-af"
             $InstallName = "Claude Code (global)"
         } else {
-            $AgentDir = ".claude\agents\btr-af"
+            $AgentDir = ".claude\agents"
             $WorkflowDir = ".claude\workflows\btr-af"
             $InstallName = "Claude Code (local)"
         }
@@ -95,13 +95,42 @@ function Main {
             Write-Err "Failed to extract repository"
         }
 
-        # Copy agent files
-        $AgentsPath = Join-Path $ExtractedDir.FullName "agents"
-        if (Test-Path $AgentsPath) {
-            Copy-Item -Path "$AgentsPath\*" -Destination $AgentDir -Recurse -Force
+        # Create installation directories
+        New-Item -ItemType Directory -Force -Path $AgentDir | Out-Null
+
+        # Convert and install agent files based on target
+        if ($Target -eq "claude") {
+            # For Claude Code: convert .agent.md to .md files and install
+            Write-Info "Converting agents for Claude Code..."
+            $agentFiles = Get-ChildItem -Path (Join-Path $ExtractedDir.FullName "agents") -Filter "*.agent.md"
+            foreach ($agentFile in $agentFiles) {
+                $basename = [System.IO.Path]::GetFileNameWithoutExtension($agentFile.Name).Replace(".agent", "")
+
+                # Extract frontmatter (between --- markers)
+                $content = Get-Content $agentFile.FullName -Raw
+                if ($content -match '(?s)^---(.+?)^---(.+)') {
+                    $frontmatter = $matches[1] -replace '^tools:\s*$', 'tools: Read, Write, Edit, Bash, Glob, Grep'
+                    $body = $matches[2].Trim()
+
+                    # Write Claude-compatible agent file
+                    @"
+---
+$frontmatter
+---
+$body
+"@ | Out-File -FilePath (Join-Path $AgentDir "$basename.md") -Encoding UTF8
+                }
+            }
             Write-Info "Agents installed to: $AgentDir"
         } else {
-            Write-Err "Agents directory not found in repository"
+            # For VS Code: copy .agent.md files to .github/agents/
+            New-Item -ItemType Directory -Force -Path ".github\agents" | Out-Null
+            $agentFiles = Get-ChildItem -Path (Join-Path $ExtractedDir.FullName "agents") -Filter "*.agent.md"
+            foreach ($agentFile in $agentFiles) {
+                $basename = [System.IO.Path]::GetFileNameWithoutExtension($agentFile.Name).Replace(".agent", "")
+                Copy-Item $agentFile.FullName -Destination ".github\agents\$basename.agent.md"
+            }
+            Write-Info "Agents installed to: .github\agents"
         }
 
         # Copy workflows (Claude Code only)
@@ -123,18 +152,18 @@ function Main {
             Write-Host "Next steps:"
             Write-Host "  1. Restart Claude Code or reload your IDE"
             if ($Scope -eq "global") {
-                Write-Host "  2. Agents installed globally in ~/.claude/agents/btr-af/"
+                Write-Host "  2. Agents installed globally in ~/.claude/agents/"
             } else {
-                Write-Host "  2. Agents installed locally in $(Get-Location)\.claude\agents\btr-af\"
+                Write-Host "  2. Agents installed locally in $(Get-Location)\.claude\agents\"
             }
             Write-Host "  3. Use @sibyl to orchestrate the elite team"
         } else {
             Write-Host "Next steps:"
             Write-Host "  1. Restart VS Code or reload the window"
             if ($Scope -eq "global") {
-                Write-Host "  2. Agents installed globally in ~/.vscode/agents/btr-af/"
+                Write-Host "  2. Agents installed globally in ~/.github/agents/"
             } else {
-                Write-Host "  2. Agents installed locally in $(Get-Location)\.vscode\agents\btr-af\"
+                Write-Host "  2. Agents installed locally in $(Get-Location)\.github\agents\"
             }
             Write-Host "  3. Configure your AI extension to use these agents"
         }

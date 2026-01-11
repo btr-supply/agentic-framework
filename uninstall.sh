@@ -14,6 +14,29 @@ NC='\033[0m' # No Color
 TARGET="claude"  # Default target
 SCOPE="local"    # Default scope: local or global
 
+# BTR-AF agent names (for identification)
+AGENT_NAMES=(
+    "sibyl"
+    "neo"
+    "flynn"
+    "krennic"
+    "farnsworth"
+    "seldon"
+    "vulcan"
+    "clu"
+    "edna"
+    "moebius"
+    "scotty"
+    "han"
+    "elliot"
+    "kusanagi"
+    "smith"
+    "deckard"
+    "trinity"
+    "jocasta"
+    "draper"
+)
+
 # Utility functions
 info() { printf "${GREEN}✓${NC} %s\n" "$1"; }
 warn() { printf "${YELLOW}⚠${NC} %s\n" "$1"; }
@@ -33,13 +56,37 @@ Options:
   --help             Show this help message
 
 Examples:
-  $0                          # Uninstall locally (.claude/agents/btr-af/)
-  $0 --global                 # Uninstall globally (~/.claude/agents/btr-af/)
+  $0                          # Uninstall locally (.claude/agents/)
+  $0 --global                 # Uninstall globally (~/.claude/agents/)
   $0 --target=vscode          # Uninstall VS Code locally
   $0 --yes --global           # Uninstall globally without confirmation
 
 EOF
     exit 0
+}
+
+# Remove BTR-AF agents from a directory
+remove_agents() {
+    local dir="$1"
+    local count=0
+
+    if [ ! -d "$dir" ]; then
+        return 0
+    fi
+
+    for agent in "${AGENT_NAMES[@]}"; do
+        if [ -f "$dir/${agent}.md" ]; then
+            rm -f "$dir/${agent}.md"
+            count=$((count + 1))
+        fi
+    done
+
+    if [ $count -gt 0 ]; then
+        info "Removed $count agent(s) from: $dir"
+    fi
+
+    # Clean up empty directory
+    rmdir "$dir" 2>/dev/null || true
 }
 
 # Main uninstallation
@@ -78,22 +125,22 @@ main() {
     # Set installation directories based on target and scope
     if [ "$TARGET" = "claude" ]; then
         if [ "$SCOPE" = "global" ]; then
-            AGENT_DIR="${HOME}/.claude/agents/btr-af"
+            AGENT_DIR="${HOME}/.claude/agents"
             WORKFLOW_DIR="${HOME}/.claude/workflows/btr-af"
             INSTALL_NAME="Claude Code (global)"
         else
-            AGENT_DIR=".claude/agents/btr-af"
+            AGENT_DIR=".claude/agents"
             WORKFLOW_DIR=".claude/workflows/btr-af"
             INSTALL_NAME="Claude Code (local)"
         fi
     else
         if [ "$SCOPE" = "global" ]; then
-            AGENT_DIR="${HOME}/.vscode/agents/btr-af"
-            WORKFLOW_DIR=""  # VS Code doesn't use workflows directory
+            AGENT_DIR="${HOME}/.github/agents"
+            WORKFLOW_DIR=""
             INSTALL_NAME="VS Code (global)"
         else
-            AGENT_DIR=".vscode/agents/btr-af"
-            WORKFLOW_DIR=""  # VS Code doesn't use workflows directory
+            AGENT_DIR=".github/agents"
+            WORKFLOW_DIR=""
             INSTALL_NAME="VS Code (local)"
         fi
     fi
@@ -102,16 +149,23 @@ main() {
     echo "====================================="
     echo ""
 
-    # Check if installation exists
-    if [ ! -d "$AGENT_DIR" ]; then
-        warn "BTR-AF not found at: $AGENT_DIR"
+    # Check if any BTR-AF agents exist
+    AGENT_COUNT=0
+    for agent in "${AGENT_NAMES[@]}"; do
+        if [ -f "$AGENT_DIR/${agent}.md" ] || [ -f "$AGENT_DIR/${agent}.agent.md" ]; then
+            AGENT_COUNT=$((AGENT_COUNT + 1))
+        fi
+    done
+
+    if [ $AGENT_COUNT -eq 0 ] && [ ! -d "$WORKFLOW_DIR" ]; then
+        warn "BTR-AF agents not found"
         echo "Nothing to uninstall."
         exit 0
     fi
 
     # Show what will be removed
     echo "The following will be removed:"
-    echo "  - Agents: $AGENT_DIR"
+    echo "  - $AGENT_COUNT BTR-AF agent(s) from: $AGENT_DIR"
     if [ -n "$WORKFLOW_DIR" ] && [ -d "$WORKFLOW_DIR" ]; then
         echo "  - Workflows: $WORKFLOW_DIR"
     fi
@@ -128,26 +182,33 @@ main() {
     fi
 
     # Remove agents
-    if [ -d "$AGENT_DIR" ]; then
-        rm -rf "$AGENT_DIR"
-        info "Removed agents from: $AGENT_DIR"
+    remove_agents "$AGENT_DIR"
+
+    # Also try .github/agents for VS Code format
+    if [ "$TARGET" = "claude" ]; then
+        if [ "$SCOPE" = "global" ]; then
+            remove_agents "${HOME}/.github/agents"
+        else
+            remove_agents ".github/agents"
+        fi
     fi
 
     # Remove workflows (Claude Code only)
     if [ -n "$WORKFLOW_DIR" ] && [ -d "$WORKFLOW_DIR" ]; then
         rm -rf "$WORKFLOW_DIR"
         info "Removed workflows from: $WORKFLOW_DIR"
+        # Clean up empty parent
+        rmdir "$(dirname "$WORKFLOW_DIR")" 2>/dev/null || true
     fi
 
     # Clean up empty parent directories
     if [ "$SCOPE" = "local" ]; then
         if [ "$TARGET" = "claude" ]; then
-            rmdir .claude/agents 2>/dev/null || true
-            rmdir .claude/workflows 2>/dev/null || true
-            rmdir .claude 2>/dev/null || true
-        else
-            rmdir .vscode/agents 2>/dev/null || true
-            rmdir .vscode 2>/dev/null || true
+            rmdir ".claude/agents" 2>/dev/null || true
+            rmdir ".claude/workflows" 2>/dev/null || true
+            rmdir ".claude" 2>/dev/null || true
+            rmdir ".github/agents" 2>/dev/null || true
+            rmdir ".github" 2>/dev/null || true
         fi
     fi
 

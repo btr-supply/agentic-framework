@@ -54,16 +54,18 @@ curl -fsSL https://raw.githubusercontent.com/btr-supply/agentic-framework/v1.0.1
 
 ### Manual Installation
 
-Copy `agents/` to `.claude/agents/btr-af/` (local) or `~/.claude/agents/btr-af/` (global).
+Copy `agents/*.agent.md` files:
+- **Claude Code**: Convert and copy to `.claude/agents/` (removes `.agent` prefix)
+- **VS Code**: Copy to `.github/agents/` (keeps `.agent.md` extension)
 
 ## Uninstallation
 
 ```bash
 # Local
-rm -rf .claude/agents/btr-af .claude/workflows/btr-af
+rm -f .claude/agents/*.agent.yaml && rm -rf .claude/workflows/btr-af
 
 # Global
-rm -rf ~/.claude/agents/btr-af ~/.claude/workflows/btr-af
+rm -f ~/.claude/agents/*.agent.yaml && rm -rf ~/.claude/workflows/btr-af
 ```
 
 ## Quick Start

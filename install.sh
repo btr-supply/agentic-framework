@@ -39,8 +39,8 @@ Arguments:
   VERSION            Version tag to install (default: latest release)
 
 Examples:
-  $0                          # Install latest locally (.claude/agents/btr-af/)
-  $0 --global                 # Install latest globally (~/.claude/agents/btr-af/)
+  $0                          # Install latest locally (.claude/agents/)
+  $0 --global                 # Install latest globally (~/.claude/agents/)
   $0 --target=vscode          # Install latest to VS Code locally
   $0 v1.0.0                   # Install v1.0.0 locally
   $0 --global v1.0.0          # Install v1.0.0 globally
@@ -112,11 +112,11 @@ main() {
     # Set installation directories based on target and scope
     if [ "$TARGET" = "claude" ]; then
         if [ "$SCOPE" = "global" ]; then
-            AGENT_DIR="${HOME}/.claude/agents/btr-af"
+            AGENT_DIR="${HOME}/.claude/agents"
             WORKFLOW_DIR="${HOME}/.claude/workflows/btr-af"
             INSTALL_NAME="Claude Code (global)"
         else
-            AGENT_DIR=".claude/agents/btr-af"
+            AGENT_DIR=".claude/agents"
             WORKFLOW_DIR=".claude/workflows/btr-af"
             INSTALL_NAME="Claude Code (local)"
         fi
@@ -170,12 +170,41 @@ main() {
         error "Failed to extract repository"
     fi
 
-    # Copy agent files
-    if [ -d "${EXTRACTED_DIR}/agents" ]; then
-        cp -r "${EXTRACTED_DIR}/agents/"* "$AGENT_DIR/"
+    # Create installation directories
+    mkdir -p "$AGENT_DIR"
+
+    # Convert and install agent files based on target
+    if [ "$TARGET" = "claude" ]; then
+        # For Claude Code: convert .agent.md to .md files and install
+        info "Converting agents for Claude Code..."
+        for agent_file in "${EXTRACTED_DIR}/agents/"*.agent.md; do
+            if [ -f "$agent_file" ]; then
+                basename=$(basename "$agent_file" .agent.md)
+                # Extract agent name from frontmatter and create Claude-compatible format
+                sed -n '/^---$/,/^---$/{p;/^---$/q}' "$agent_file" > "${TEMP_DIR}/frontmatter.tmp"
+                sed '1{/^---$/d};/^---$/d' "$agent_file" > "${TEMP_DIR}/body.tmp"
+
+                # Convert tools to Claude format
+                sed -i.bak 's/^tools:$/tools: Read, Write, Edit, Bash, Glob, Grep/' "${TEMP_DIR}/frontmatter.tmp"
+                rm -f "${TEMP_DIR}/frontmatter.tmp.bak"
+
+                # Write Claude-compatible agent file
+                cat "${TEMP_DIR}/frontmatter.tmp" > "$AGENT_DIR/${basename}.md"
+                echo "" >> "$AGENT_DIR/${basename}.md"
+                cat "${TEMP_DIR}/body.tmp" >> "$AGENT_DIR/${basename}.md"
+            fi
+        done
         info "Agents installed to: $AGENT_DIR"
     else
-        error "Agents directory not found in repository"
+        # For VS Code: copy .agent.md files to .github/agents/
+        mkdir -p ".github/agents"
+        for agent_file in "${EXTRACTED_DIR}/agents/"*.agent.md; do
+            if [ -f "$agent_file" ]; then
+                basename=$(basename "$agent_file" .agent.md)
+                cp "$agent_file" ".github/agents/${basename}.agent.md"
+            fi
+        done
+        info "Agents installed to: .github/agents/"
     fi
 
     # Copy workflows (Claude Code only)
@@ -194,9 +223,9 @@ main() {
         echo "Next steps:"
         echo "  1. Restart Claude Code or reload your IDE"
         if [ "$SCOPE" = "global" ]; then
-            echo "  2. Agents installed globally in ~/.claude/agents/btr-af/"
+            echo "  2. Agents installed globally in ~/.claude/agents/"
         else
-            echo "  2. Agents installed locally in $(pwd)/.claude/agents/btr-af/"
+            echo "  2. Agents installed locally in $(pwd)/.claude/agents/"
         fi
         echo "  3. Use @sibyl to orchestrate the elite team"
     else
