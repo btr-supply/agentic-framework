@@ -2,19 +2,15 @@
 
 **Elite DeFi Development Framework**
 
-BTR-AF provides 19 elite AI agents (industry top 0.001%) for institutional-grade DeFi development with Purple Team security, quantitative research, and hub-and-spoke orchestration.
+19 AI agents for institutional-grade DeFi development with Purple Team security and hub-and-spoke orchestration.
 
 ## Installation
 
-BTR-AF installs **locally** by default (in your current directory). Use `--global` for user-wide installation.
+Installs locally by default (to `.claude/` or `.vscode/` in your project). Use `--global` for user-wide installation.
 
 ### Quick Install (Local)
 
-Install to current directory's `.claude/` or `.vscode/` folder.
-
-**Recommended - use `latest` tag for stable releases:**
-
-**Claude Code (macOS / Linux):**
+**Claude Code (macOS/Linux):**
 ```bash
 cd /path/to/your/project
 curl -fsSL https://raw.githubusercontent.com/btr-supply/agentic-framework/latest/install.sh | bash
@@ -26,7 +22,7 @@ cd C:\path\to\your\project
 irm https://raw.githubusercontent.com/btr-supply/agentic-framework/latest/install.ps1 | iex
 ```
 
-**VS Code (macOS / Linux):**
+**VS Code (macOS/Linux):**
 ```bash
 cd /path/to/your/project
 curl -fsSL https://raw.githubusercontent.com/btr-supply/agentic-framework/latest/install.sh | bash -s -- --target=vscode
@@ -40,130 +36,45 @@ irm https://raw.githubusercontent.com/btr-supply/agentic-framework/latest/instal
 
 ### Global Install
 
-Install to user home directory (`~/.claude/` or `~/.vscode/`):
-
-**macOS / Linux:**
 ```bash
+# macOS/Linux
 curl -fsSL https://raw.githubusercontent.com/btr-supply/agentic-framework/latest/install.sh | bash -s -- --global
-```
 
-**Windows PowerShell:**
-```powershell
+# Windows PowerShell
 irm https://raw.githubusercontent.com/btr-supply/agentic-framework/latest/install.ps1 | iex -Global
 ```
 
-### Install Specific Version
+### Version Pinning
 
-Use a specific version tag (`v1.0.1`, `v1.0.0`, etc.) instead of `latest` for reproducible installs:
+Replace `latest` with a version tag (`v1.0.1`, `v1.0.0`) for reproducible installs:
 
-**Local with version:**
 ```bash
-# Claude Code
 curl -fsSL https://raw.githubusercontent.com/btr-supply/agentic-framework/v1.0.1/install.sh | bash -s -- v1.0.1
-
-# VS Code
-curl -fsSL https://raw.githubusercontent.com/btr-supply/agentic-framework/v1.0.1/install.sh | bash -s -- --target=vscode v1.0.1
-```
-
-**Global with version:**
-```bash
-curl -fsSL https://raw.githubusercontent.com/btr-supply/agentic-framework/v1.0.1/install.sh | bash -s -- --global v1.0.1
-```
-
-**Windows PowerShell:**
-```powershell
-# Local
-irm https://raw.githubusercontent.com/btr-supply/agentic-framework/v1.0.1/install.ps1 | iex -Version v1.0.1
-
-# Global
-irm https://raw.githubusercontent.com/btr-supply/agentic-framework/v1.0.1/install.ps1 | iex -Global -Version v1.0.1
 ```
 
 ### Manual Installation
 
-**Local (project-specific):**
-1. Clone this repository
-2. Copy `agents/` to `.claude/agents/btr-af/` in your project
-3. Copy `workflows/` to `.claude/workflows/btr-af/` (optional)
-4. Restart Claude Code
-
-**Global (user-wide):**
-1. Clone this repository
-2. Copy `agents/` to `~/.claude/agents/btr-af/`
-3. Copy `workflows/` to `~/.claude/workflows/btr-af/` (optional)
-4. Restart Claude Code
+Copy `agents/` to `.claude/agents/btr-af/` (local) or `~/.claude/agents/btr-af/` (global).
 
 ## Uninstallation
 
-### Quick Uninstall
-
-**Uninstall local installation:**
 ```bash
-# macOS / Linux
-cd /path/to/your/project
-curl -fsSL https://raw.githubusercontent.com/btr-supply/agentic-framework/latest/uninstall.sh | bash
-
-# Windows PowerShell
-cd C:\path\to\your\project
-irm https://raw.githubusercontent.com/btr-supply/agentic-framework/latest/uninstall.ps1 | iex
-```
-
-**Uninstall global installation:**
-```bash
-# macOS / Linux
-curl -fsSL https://raw.githubusercontent.com/btr-supply/agentic-framework/latest/uninstall.sh | bash -s -- --global
-
-# Windows PowerShell
-irm https://raw.githubusercontent.com/btr-supply/agentic-framework/latest/uninstall.ps1 | iex -Global
-```
-
-**Skip confirmation:**
-```bash
-# macOS / Linux
-curl -fsSL https://raw.githubusercontent.com/btr-supply/agentic-framework/latest/uninstall.sh | bash -s -- --yes
-
-# Windows PowerShell
-irm https://raw.githubusercontent.com/btr-supply/agentic-framework/latest/uninstall.ps1 | iex -Yes
-```
-
-### Manual Uninstallation
-
-**Local:**
-```bash
+# Local
 rm -rf .claude/agents/btr-af .claude/workflows/btr-af
-```
 
-**Global:**
-```bash
+# Global
 rm -rf ~/.claude/agents/btr-af ~/.claude/workflows/btr-af
 ```
 
 ## Quick Start
 
-After installation:
-1. Use `@sibyl` to orchestrate the elite team
+1. Use `@sibyl` to orchestrate the team
 2. All work flows through Sibyl (hub-and-spoke model)
 3. Access specialized agents for specific tasks
 
-```
-btr-af/
-├── agents/      # 19 S-tier AI agent personas
-├── workflows/   # Hub-and-spoke workflow templates
-├── docs/        # Documentation
-└── install.sh   # Installation script (Mac/Linux)
-```
-
-## Hub-and-Spoke Orchestration
-
-All work flows through **Sibyl** (CEO/orchestrator) as the central hub. Like a hive mind:
-- Sibyl receives all tasks, decomposes into domain assignments
-- Routes to appropriate leads and specialists
-- Collects outputs, consolidates, validates before delivery
-- NO direct agent-to-agent work - all flows through Sibyl
-
 ## Elite Team (19 Agents)
 
-### Leadership (4) - Top 0.001%
+### Leadership (4)
 | Agent | Role | Delegates To |
 |-------|------|--------------|
 | **Sibyl** | CEO + Research Lead + Orchestrator | All agents |
@@ -171,10 +82,10 @@ All work flows through **Sibyl** (CEO/orchestrator) as the central hub. Like a h
 | **Flynn** | On-Chain Tech Lead | Vulcan, Clu |
 | **Krennic** | Backend Tech Lead | Scotty, Han |
 
-### Research Task Force (4)
+### Research (4)
 | Agent | Role | Focus |
 |-------|------|-------|
-| **Farnsworth** | Visionary Researcher (Maverick) | Paradigm-breaking theories |
+| **Farnsworth** | Visionary Researcher | Paradigm-breaking theories |
 | **Seldon** | Rigorist Quant | Mathematical validation |
 | **Vulcan** | Theory-to-Code Lead | Simulators + contracts |
 | **Sibyl** | Research Validation | Strategic alignment |
@@ -188,7 +99,7 @@ All work flows through **Sibyl** (CEO/orchestrator) as the central hub. Like a h
 | **Deckard** | Blue Team (Deep Audit) | Code-level audit |
 | **Trinity** | Blue Team (Systems) | Integration security |
 
-### Implementation Specialists (8)
+### Implementation Specialists (6)
 | Agent | Role | Paired With |
 |-------|------|-------------|
 | **Vulcan** | IT Quant + Smart Contract Dev | Clu |
@@ -197,50 +108,44 @@ All work flows through **Sibyl** (CEO/orchestrator) as the central hub. Like a h
 | **Moebius** | Frontend Performance | Edna |
 | **Scotty** | Backend Robustness | Han |
 | **Han** | CI/CD + Delivery | Scotty |
+
+### Content (2)
+| Agent | Role | Paired With |
+|-------|------|-------------|
 | **Jocasta** | Technical Writer + DeFi Education | Draper |
 | **Draper** | Marketing + Growth | Jocasta |
 
-## Task Coverage (2+ Agents Each)
+## Task Coverage
 
 | Capability | Agents |
 |------------|--------|
-| Smart Contracts | Vulcan (correctness) + Clu (optimization) |
-| Backend | Scotty (robustness) + Han (delivery) |
-| Frontend | Edna (UX) + Moebius (performance) |
-| Research | Farnsworth (vision) + Seldon (rigor) |
-| Security Red | Kusanagi (strategy) + Smith (tactics) |
-| Security Blue | Deckard (audit) + Trinity (systems) |
-| Content | Jocasta (docs) + Draper (social) |
+| Smart Contracts | Vulcan + Clu |
+| Backend | Scotty + Han |
+| Frontend | Edna + Moebius |
+| Research | Farnsworth + Seldon |
+| Security Red | Kusanagi + Smith |
+| Security Blue | Deckard + Trinity |
+| Content | Jocasta + Draper |
 
 ## Key Principles
 
-1. **Hub-and-spoke** - ALL work flows through Sibyl (orchestrator)
+1. **Hub-and-spoke** - All work flows through Sibyl
 2. **Leads never implement** - They consolidate, challenge, review
-3. **Security mandatory** - Smart contracts require Trinity + Kusanagi review
+3. **Security mandatory** - Smart contracts require Purple Team review
 4. **Research pipeline** - Farnsworth proposes → Seldon proves → Vulcan implements
 5. **Consensus decisions** - 5 reviewers for major decisions
-6. **S-tier only** - All agents are industry top 0.001%
-
-## Documentation
-
-- [Elite Team Spec](docs/ELITE-TEAM-SPEC.md) - Complete agent descriptions and capabilities
-- [Setup Guide](docs/SETUP.md) - Configuration and usage
-- [Core Principles](docs/core-principles.md) - Framework philosophy
 
 ## Architecture
 
-BTR-AF is designed for institutional-grade DeFi development with:
-- **Zero dependencies**: Portable install scripts using only shell builtins
-- **Cross-platform**: Works on macOS, Linux, and Windows
-- **Hub-and-spoke orchestration**: All work flows through Sibyl (no cross-agent communication)
-- **Task coverage**: 2+ agents for every capability (contracts, backend, frontend, research, security, content)
+- **Zero dependencies**: Portable shell scripts
+- **Cross-platform**: macOS, Linux, Windows
+- **Hub-and-spoke orchestration**: Sibyl coordinates all agents
+- **Dual coverage**: 2+ agents for every capability
 
 ## Sources
 
-Installation and integration based on official documentation:
 - [Claude Code Subagents Documentation](https://code.claude.com/docs/en/sub-agents)
 - [VS Code AI Agents Overview](https://code.visualstudio.com/docs/copilot/agents/overview)
-- [Claude Code Best Practices](https://www.anthropic.com/engineering/claude-code-best-practices)
 
 ## License
 

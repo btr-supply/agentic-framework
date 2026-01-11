@@ -351,7 +351,5 @@ git rev-parse latest^{} && git rev-parse v1.0.2^{}
 
 ## Related Documentation
 
-- [`README.md`](./README.md) - Project overview
+- [`README.md`](./README.md) - Project overview and installation
 - [`CLAUDE.md`](./CLAUDE.md) - AI agent instructions
-- [`docs/SETUP.md`](./docs/SETUP.md) - Setup guide
-- [`docs/core-principles.md`](./docs/core-principles.md) - Core principles
