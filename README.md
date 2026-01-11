@@ -55,24 +55,24 @@ irm https://raw.githubusercontent.com/btr-supply/agentic-framework/main/install.
 **Local with version:**
 ```bash
 # Claude Code
-curl -fsSL https://raw.githubusercontent.com/btr-supply/agentic-framework/main/install.sh | bash -s -- v1.0.0
+curl -fsSL https://raw.githubusercontent.com/btr-supply/agentic-framework/main/install.sh | bash -s -- v1.0.1
 
 # VS Code
-curl -fsSL https://raw.githubusercontent.com/btr-supply/agentic-framework/main/install.sh | bash -s -- --target=vscode v1.0.0
+curl -fsSL https://raw.githubusercontent.com/btr-supply/agentic-framework/main/install.sh | bash -s -- --target=vscode v1.0.1
 ```
 
 **Global with version:**
 ```bash
-curl -fsSL https://raw.githubusercontent.com/btr-supply/agentic-framework/main/install.sh | bash -s -- --global v1.0.0
+curl -fsSL https://raw.githubusercontent.com/btr-supply/agentic-framework/main/install.sh | bash -s -- --global v1.0.1
 ```
 
 **Windows PowerShell:**
 ```powershell
 # Local
-irm https://raw.githubusercontent.com/btr-supply/agentic-framework/main/install.ps1 | iex -Version v1.0.0
+irm https://raw.githubusercontent.com/btr-supply/agentic-framework/main/install.ps1 | iex -Version v1.0.1
 
 # Global
-irm https://raw.githubusercontent.com/btr-supply/agentic-framework/main/install.ps1 | iex -Global -Version v1.0.0
+irm https://raw.githubusercontent.com/btr-supply/agentic-framework/main/install.ps1 | iex -Global -Version v1.0.1
 ```
 
 ### Manual Installation
