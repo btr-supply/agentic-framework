@@ -202,103 +202,51 @@ Co-Authored / Generated with Claude (never mention AI)
 - Users can install with `latest` for convenience or specific versions for reproducibility
 
 **Semantic Versioning:**
-- `v1.0.0` → `v1.0.1`: Patch (bug fixes, documentation)
-- `v1.0.0` → `v1.1.0`: Minor (new features, backward compatible)
-- `v1.0.0` → `v2.0.0`: Major (breaking changes)
+
+| Bump Type | Condition | Examples |
+|-----------|-----------|----------|
+| **Major** | Workflow restructure, orchestration changes, breaking changes | New agent architecture, removal of agents, non-backward-compatible changes |
+| **Minor** | Adding agents or workflows, backward-compatible features | New agent, new workflow template, new installation options |
+| **Patch** | Bug fixes, documentation updates, typo fixes | Broken install script, corrected agent descriptions, README updates |
 
 **Creating a New Release:**
 
-1. **Make and test your changes** on the `main` branch
-
-2. **Update version in package.json:**
-   ```bash
-   # Edit package.json, change version field
-   ```
-
-3. **Update version references in README.md:**
-   ```bash
-   # Replace old version (e.g., v1.0.1) with new version (e.g., v1.0.2) in examples
-   ```
-
-4. **Commit version bump:**
-   ```bash
-   git add package.json README.md
-   git commit -m "[ops] Bump version to vX.Y.Z"
-   git push origin main
-   ```
-
-5. **Create version tag:**
-   ```bash
-   git tag -a vX.Y.Z -m "BTR-AF vX.Y.Z - Brief description"
-   git push origin vX.Y.Z
-   ```
-
-6. **Move the `latest` tag:**
-   ```bash
-   # Delete old latest tag locally
-   git tag -d latest
-
-   # Create new latest tag pointing to the new version (use ^{} to point to commit, not tag)
-   git tag -a latest -m "Alias for latest stable release (currently vX.Y.Z)" vX.Y.Z^{}
-
-   # Force push latest tag to remote
-   git push -f origin latest
-   ```
-
-7. **Create GitHub Release:**
-   ```bash
-   gh release create vX.Y.Z \
-     --title "vX.Y.Z - Release Title" \
-     --notes "## Changes
-
-   - Feature or fix 1
-   - Feature or fix 2
-
-   ## Installation
-
-   See README.md for installation instructions."
-   ```
-
-8. **Verify:**
-   ```bash
-   # Check that latest and vX.Y.Z point to the same commit
-   git rev-parse latest^{}
-   git rev-parse vX.Y.Z^{}
-
-   # Should output the same commit hash
-   ```
-
-**Example Release Workflow:**
+Use the `release.sh` script to automate version bumping and tagging:
 
 ```bash
-# Bump version to v1.0.2
-vim package.json  # Change version to 1.0.2
-vim README.md     # Update v1.0.1 → v1.0.2 in examples
+# Patch release (bug fixes, documentation)
+./release.sh patch
 
-git add package.json README.md
-git commit -m "[ops] Bump version to v1.0.2"
-git push origin main
+# Minor release (new agents or workflows)
+./release.sh minor
 
-# Create version tag
-git tag -a v1.0.2 -m "BTR-AF v1.0.2 - Bug fixes and improvements"
-git push origin v1.0.2
+# Major release (workflow restructure, breaking changes)
+./release.sh major
+```
 
-# Move latest tag
-git tag -d latest
-git tag -a latest -m "Alias for latest stable release (currently v1.0.2)" v1.0.2^{}
-git push -f origin latest
+The script automatically:
+1. Bumps version in `package.json`
+2. Commits the change
+3. Creates version tag (`vX.Y.Z`)
+4. Moves `latest` tag to current commit
+5. Pushes everything to GitHub
 
-# Create GitHub Release
-gh release create v1.0.2 --title "v1.0.2 - Bug Fixes" --notes "..."
+**Manual Release (if needed):**
 
-# Verify
-git rev-parse latest^{} && git rev-parse v1.0.2^{}
+```bash
+# 1. Update version in package.json
+# 2. Commit: git commit -m "[ops] Bump version to vX.Y.Z"
+# 3. Create tags:
+git tag vX.Y.Z
+git tag -d latest && git tag latest
+# 4. Push:
+git push && git push origin vX.Y.Z && git push origin :refs/tags/latest && git push origin latest
 ```
 
 **Important Notes:**
-- Always use `vX.Y.Z^{}` when creating the `latest` tag to point to the commit, not the tag object
-- Force push is required for `latest` tag since it moves to different commits
-- The `latest` tag should only point to stable releases, never to `main` branch directly
+- The `latest` tag always points to the most recent stable release
+- Never tag `main` branch directly as `latest`
+- Use semantic versioning conditions above to determine bump type
 
 ---
 
