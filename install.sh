@@ -181,19 +181,14 @@ main() {
             if [ -f "$agent_file" ]; then
                 basename=$(basename "$agent_file" .agent.md)
                 # Use awk for portable extraction (macOS + Linux compatible)
+                # Extract YAML frontmatter including --- delimiters
                 awk '
-                    /^---$/ { if (++count == 2) exit; next }
+                    /^---$/ {
+                        if (++count == 1) { print; next }
+                        if (count == 2) { print; exit }
+                    }
                     count == 1 { print }
-                ' "$agent_file" > "${TEMP_DIR}/frontmatter.tmp"
-                awk '
-                    /^---$/ { if (++count >= 2) { print; next } }
-                    count >= 2 { print }
-                ' "$agent_file" > "${TEMP_DIR}/body.tmp"
-
-                # Write Claude-compatible agent file
-                cat "${TEMP_DIR}/frontmatter.tmp" > "$AGENT_DIR/${basename}.md"
-                echo "" >> "$AGENT_DIR/${basename}.md"
-                cat "${TEMP_DIR}/body.tmp" >> "$AGENT_DIR/${basename}.md"
+                ' "$agent_file" > "$AGENT_DIR/${basename}.md"
             fi
         done
         info "Agents installed to: $AGENT_DIR"
