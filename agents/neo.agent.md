@@ -22,6 +22,8 @@ tools:
   - mcp__playwright__browser_type
   - mcp__playwright__browser_take_screenshot
   - mcp__playwright__browser_close
+  - mcp__zread__search_doc
+  - mcp__zread__read_file
 model: sonnet
 handoffs:
   - label: Delegate to Edna (UX + Frontend)
