@@ -180,13 +180,15 @@ main() {
         for agent_file in "${EXTRACTED_DIR}/agents/"*.agent.md; do
             if [ -f "$agent_file" ]; then
                 basename=$(basename "$agent_file" .agent.md)
-                # Extract agent name from frontmatter and create Claude-compatible format
-                sed -n '/^---$/,/^---$/{p;/^---$/q}' "$agent_file" > "${TEMP_DIR}/frontmatter.tmp"
-                sed '1{/^---$/d};/^---$/d' "$agent_file" > "${TEMP_DIR}/body.tmp"
-
-                # Convert tools to Claude format
-                sed -i.bak 's/^tools:$/tools: Read, Write, Edit, Bash, Glob, Grep/' "${TEMP_DIR}/frontmatter.tmp"
-                rm -f "${TEMP_DIR}/frontmatter.tmp.bak"
+                # Use awk for portable extraction (macOS + Linux compatible)
+                awk '
+                    /^---$/ { if (++count == 2) exit; next }
+                    count == 1 { print }
+                ' "$agent_file" > "${TEMP_DIR}/frontmatter.tmp"
+                awk '
+                    /^---$/ { if (++count >= 2) { print; next } }
+                    count >= 2 { print }
+                ' "$agent_file" > "${TEMP_DIR}/body.tmp"
 
                 # Write Claude-compatible agent file
                 cat "${TEMP_DIR}/frontmatter.tmp" > "$AGENT_DIR/${basename}.md"
