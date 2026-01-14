@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # BTR-AF Installer
-# Supports: Claude Code, VS Code, macOS, Linux
+# Supports: OpenCode, Claude Code, VS Code, macOS, Linux
 # Dependencies: None (uses only POSIX shell builtins + curl/wget)
 
 set -e
@@ -14,7 +14,7 @@ NC='\033[0m' # No Color
 # Configuration
 REPO="btr-supply/agentic-framework"
 GITHUB_API="https://api.github.com/repos/${REPO}"
-TARGET="claude"  # Default target
+TARGET="opencode"  # Default target
 SCOPE="local"    # Default scope: local or global
 VERSION=""
 
@@ -31,7 +31,7 @@ BTR-AF Installer
 Usage: $0 [OPTIONS] [VERSION]
 
 Options:
-  --target=TARGET    Installation target: 'claude' or 'vscode' (default: claude)
+  --target=TARGET    Installation target: 'opencode', 'claude', or 'vscode' (default: opencode)
   --global           Install globally to user home directory (default: local)
   --help             Show this help message
 
@@ -39,11 +39,11 @@ Arguments:
   VERSION            Version tag to install (default: latest release)
 
 Examples:
-  $0                          # Install latest locally (.claude/agents/)
-  $0 --global                 # Install latest globally (~/.claude/agents/)
-  $0 --target=vscode          # Install latest to VS Code locally
+  $0                          # Install latest for OpenCode locally (.opencode/agent/)
+  $0 --target=claude          # Install latest for Claude Code locally
+  $0 --target=vscode          # Install latest for VS Code locally
+  $0 --global                 # Install latest globally
   $0 v1.0.0                   # Install v1.0.0 locally
-  $0 --global v1.0.0          # Install v1.0.0 globally
 
 EOF
     exit 0
@@ -81,6 +81,28 @@ get_latest_tag() {
     echo "$tag"
 }
 
+# Write opencode.json
+write_opencode_config() {
+    cat > opencode.json << 'EOF'
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "intracom": {
+      "type": "local",
+      "command": ["bun", "run", "../agentic-intracom/src/index.ts"],
+      "environment": {
+        "INTRACOM_STORAGE": ".opencode/intracom-state.json"
+      },
+      "enabled": true
+    }
+  },
+  "tools": {
+    "intracom*": true
+  }
+}
+EOF
+}
+
 # Main installation
 main() {
     # Parse arguments
@@ -105,12 +127,22 @@ main() {
     done
 
     # Validate target
-    if [ "$TARGET" != "claude" ] && [ "$TARGET" != "vscode" ]; then
-        error "Invalid target: $TARGET. Must be 'claude' or 'vscode'"
+    if [ "$TARGET" != "opencode" ] && [ "$TARGET" != "claude" ] && [ "$TARGET" != "vscode" ]; then
+        error "Invalid target: $TARGET. Must be 'opencode', 'claude', or 'vscode'"
     fi
 
     # Set installation directories based on target and scope
-    if [ "$TARGET" = "claude" ]; then
+    if [ "$TARGET" = "opencode" ]; then
+        if [ "$SCOPE" = "global" ]; then
+            AGENT_DIR="${HOME}/.config/opencode/agent"
+            CONFIG_DIR="${HOME}/.config/opencode"
+            INSTALL_NAME="OpenCode (global)"
+        else
+            AGENT_DIR=".opencode/agent"
+            CONFIG_DIR="."
+            INSTALL_NAME="OpenCode (local)"
+        fi
+    elif [ "$TARGET" = "claude" ]; then
         if [ "$SCOPE" = "global" ]; then
             AGENT_DIR="${HOME}/.claude/agents"
             WORKFLOW_DIR="${HOME}/.claude/workflows/btr-af"
@@ -170,11 +202,24 @@ main() {
         error "Failed to extract repository"
     fi
 
-    # Create installation directories
-    mkdir -p "$AGENT_DIR"
+    # Install based on target
+    if [ "$TARGET" = "opencode" ]; then
+        # For OpenCode: copy .opencode/agent/*.md files
+        info "Installing agents for OpenCode..."
+        if [ -d "${EXTRACTED_DIR}/.opencode/agent" ]; then
+            mkdir -p "$AGENT_DIR"
+            cp "${EXTRACTED_DIR}/.opencode/agent/"*.md "$AGENT_DIR/" 2>/dev/null || true
+            info "Agents installed to: $AGENT_DIR"
+        fi
 
-    # Convert and install agent files based on target
-    if [ "$TARGET" = "claude" ]; then
+        # Create opencode.json if local install
+        if [ "$SCOPE" = "local" ]; then
+            info "Creating opencode.json..."
+            write_opencode_config
+            info "Config created: opencode.json"
+        fi
+
+    elif [ "$TARGET" = "claude" ]; then
         # For Claude Code: convert .agent.md to .md files and install
         info "Converting agents for Claude Code..."
         for agent_file in "${EXTRACTED_DIR}/agents/"*.agent.md; do
@@ -192,6 +237,14 @@ main() {
             fi
         done
         info "Agents installed to: $AGENT_DIR"
+
+        # Copy workflows
+        if [ -n "$WORKFLOW_DIR" ] && [ -d "${EXTRACTED_DIR}/workflows" ]; then
+            mkdir -p "$WORKFLOW_DIR"
+            cp -r "${EXTRACTED_DIR}/workflows/"* "$WORKFLOW_DIR/"
+            info "Workflows installed to: $WORKFLOW_DIR"
+        fi
+
     else
         # For VS Code: copy .agent.md files to .github/agents/
         mkdir -p ".github/agents"
@@ -204,19 +257,23 @@ main() {
         info "Agents installed to: .github/agents/"
     fi
 
-    # Copy workflows (Claude Code only)
-    if [ "$TARGET" = "claude" ] && [ -n "$WORKFLOW_DIR" ] && [ -d "${EXTRACTED_DIR}/workflows" ]; then
-        mkdir -p "$WORKFLOW_DIR"
-        cp -r "${EXTRACTED_DIR}/workflows/"* "$WORKFLOW_DIR/"
-        info "Workflows installed to: $WORKFLOW_DIR"
-    fi
-
     # Installation complete
     echo ""
     info "Installation complete!"
     echo ""
 
-    if [ "$TARGET" = "claude" ]; then
+    if [ "$TARGET" = "opencode" ]; then
+        echo "Next steps:"
+        echo "  1. Install IntraCom: cd ~/Work && git clone https://github.com/btr-supply/agentic-intracom.git"
+        echo "  2. Install IntraCom dependencies: cd ~/Work/agentic-intracom && bun install"
+        echo "  3. Install OpenCode: curl -fsSL https://opencode.ai/install | bash"
+        if [ "$SCOPE" = "global" ]; then
+            echo "  4. Agents installed globally in ~/.config/opencode/agent/"
+        else
+            echo "  4. Run: opencode (in $(pwd))"
+        fi
+        echo "  5. Use @sibyl to orchestrate the elite team"
+    elif [ "$TARGET" = "claude" ]; then
         echo "Next steps:"
         echo "  1. Restart Claude Code or reload your IDE"
         if [ "$SCOPE" = "global" ]; then

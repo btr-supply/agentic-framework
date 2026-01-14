@@ -6,20 +6,33 @@
 
 ## Installation
 
-Installs locally by default (to `.claude/` or `.vscode/` in your project). Use `--global` for user-wide installation.
+### OpenCode (Recommended)
 
-### Quick Install (Local)
+OpenCode supports cross-agent communication via MCP servers.
+
+```bash
+# Install OpenCode
+curl -fsSL https://opencode.ai/install | bash
+
+# Clone agentic-framework
+git clone https://github.com/btr-supply/agentic-framework.git
+cd agentic-framework
+
+# Clone IntraCom (agent bus MCP server)
+git clone https://github.com/btr-supply/agentic-intracom.git ../agentic-intracom
+cd ../agentic-intracom && bun install
+```
+
+The `opencode.json` in this repo is pre-configured to use IntraCom for agent communication.
+
+### Claude Code / VS Code
+
+Installs locally by default (to `.claude/` or `.vscode/`). Use `--global` for user-wide installation.
 
 **Claude Code (macOS/Linux):**
 ```bash
 cd /path/to/your/project
 curl -fsSL https://raw.githubusercontent.com/btr-supply/agentic-framework/latest/install.sh | bash
-```
-
-**Claude Code (Windows PowerShell):**
-```powershell
-cd C:\path\to\your\project
-irm https://raw.githubusercontent.com/btr-supply/agentic-framework/latest/install.ps1 | iex
 ```
 
 **VS Code (macOS/Linux):**
@@ -28,51 +41,71 @@ cd /path/to/your/project
 curl -fsSL https://raw.githubusercontent.com/btr-supply/agentic-framework/latest/install.sh | bash -s -- --target=vscode
 ```
 
-**VS Code (Windows PowerShell):**
-```powershell
-cd C:\path\to\your\project
-irm https://raw.githubusercontent.com/btr-supply/agentic-framework/latest/install.ps1 | iex -Target vscode
-```
-
-### Global Install
-
-```bash
-# macOS/Linux
-curl -fsSL https://raw.githubusercontent.com/btr-supply/agentic-framework/latest/install.sh | bash -s -- --global
-
-# Windows PowerShell
-irm https://raw.githubusercontent.com/btr-supply/agentic-framework/latest/install.ps1 | iex -Global
-```
-
 ### Version Pinning
 
-Replace `latest` with a version tag (`v1.0.1`, `v1.0.0`) for reproducible installs:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/btr-supply/agentic-framework/v1.0.1/install.sh | bash -s -- v1.0.1
-```
+Replace `latest` with a version tag (`v1.0.1`, `v1.0.0`) for reproducible installs.
 
 ### Manual Installation
 
 Copy `agents/*.agent.md` files:
-- **Claude Code**: Convert and copy to `.claude/agents/` (removes `.agent` prefix)
-- **VS Code**: Copy to `.github/agents/` (keeps `.agent.md` extension)
+- **Claude Code**: Convert and copy to `.claude/agents/`
+- **OpenCode**: Copy to `.opencode/agent/` (already done in this repo)
 
-## Uninstallation
+## OpenCode + IntraCom Setup
 
-```bash
-# Local
-rm -f .claude/agents/*.agent.yaml && rm -rf .claude/workflows/btr-af
+This framework integrates with [IntraCom](https://github.com/btr-supply/agentic-intracom) for cross-agent communication.
 
-# Global
-rm -f ~/.claude/agents/*.agent.yaml && rm -rf ~/.claude/workflows/btr-af
+### Configuration
+
+The `opencode.json` in this repo includes:
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "intracom": {
+      "type": "local",
+      "command": ["bun", "run", "../agentic-intracom/src/index.ts"],
+      "enabled": true
+    }
+  }
+}
+```
+
+### Agent Communication
+
+Agents can communicate via IntraCom MCP tools:
+
+- `agent_register` - Register agent with capabilities
+- `message_send` - Send messages to other agents
+- `message_read` - Read messages from mailbox
+- `agent_list` - List all registered agents
+
+### Example Agent Configuration
+
+```markdown
+---
+description: CEO + Orchestrator
+mode: primary
+---
+
+# Sibyl - CEO
+
+You are registered as `sibyl` on IntraCom.
+
+## Communication Protocol
+
+1. Register: `agent_register(agentId="sibyl", capabilities={...}, allowlist=[...])`
+2. Send: `message_send(from="sibyl", to="neo", body="...")`
+3. Read: `message_read(agentId="sibyl")`
 ```
 
 ## Quick Start
 
-1. Use `@sibyl` to orchestrate the team
-2. All work flows through Sibyl (hub-and-spoke model)
-3. Access specialized agents for specific tasks
+1. Install OpenCode: `curl -fsSL https://opencode.ai/install | bash`
+2. Install IntraCom dependencies from `../agentic-intracom`
+3. Run: `opencode` in this directory
+4. Use `@sibyl` to orchestrate the team
 
 ## Elite Team (19 Agents)
 

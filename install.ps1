@@ -1,11 +1,11 @@
 # BTR-AF Installer (Windows)
-# Supports: Claude Code, VS Code
+# Supports: OpenCode, Claude Code, VS Code
 # Requires: PowerShell 5.1+ (built-in on Windows 10+)
 
 param(
     [string]$Version = $null,
-    [ValidateSet("claude", "vscode")]
-    [string]$Target = "claude",
+    [ValidateSet("opencode", "claude", "vscode")]
+    [string]$Target = "opencode",
     [switch]$Global = $false
 )
 
@@ -31,10 +31,42 @@ function Get-LatestTag {
     }
 }
 
+# Write opencode.json
+function Write-OpenCodeConfig {
+    @'
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "intracom": {
+      "type": "local",
+      "command": ["bun", "run", "../agentic-intracom/src/index.ts"],
+      "environment": {
+        "INTRACOM_STORAGE": ".opencode/intracom-state.json"
+      },
+      "enabled": true
+    }
+  },
+  "tools": {
+    "intracom*": true
+  }
+}
+'@ | Out-File -FilePath "opencode.json" -Encoding UTF8
+}
+
 # Main installation
 function Main {
     # Set installation directories based on target and scope
-    if ($Target -eq "claude") {
+    if ($Target -eq "opencode") {
+        if ($Scope -eq "global") {
+            $AgentDir = Join-Path $env:USERPROFILE ".config\opencode\agent"
+            $ConfigDir = Join-Path $env:USERPROFILE ".config\opencode"
+            $InstallName = "OpenCode (global)"
+        } else {
+            $AgentDir = ".opencode\agent"
+            $ConfigDir = "."
+            $InstallName = "OpenCode (local)"
+        }
+    } elseif ($Target -eq "claude") {
         if ($Scope -eq "global") {
             $AgentDir = Join-Path $env:USERPROFILE ".claude\agents"
             $WorkflowDir = Join-Path $env:USERPROFILE ".claude\workflows\btr-af"
@@ -47,11 +79,11 @@ function Main {
     } else {
         if ($Scope -eq "global") {
             $AgentDir = Join-Path $env:USERPROFILE ".vscode\agents\btr-af"
-            $WorkflowDir = $null  # VS Code doesn't use workflows directory
+            $WorkflowDir = $null
             $InstallName = "VS Code (global)"
         } else {
             $AgentDir = ".vscode\agents\btr-af"
-            $WorkflowDir = $null  # VS Code doesn't use workflows directory
+            $WorkflowDir = $null
             $InstallName = "VS Code (local)"
         }
     }
@@ -95,11 +127,28 @@ function Main {
             Write-Err "Failed to extract repository"
         }
 
-        # Create installation directories
-        New-Item -ItemType Directory -Force -Path $AgentDir | Out-Null
+        # Install based on target
+        if ($Target -eq "opencode") {
+            # For OpenCode: copy .opencode/agent/*.md files
+            Write-Info "Installing agents for OpenCode..."
+            $OpenCodeAgentPath = Join-Path $ExtractedDir.FullName ".opencode\agent"
+            if (Test-Path $OpenCodeAgentPath) {
+                New-Item -ItemType Directory -Force -Path $AgentDir | Out-Null
+                $agentFiles = Get-ChildItem -Path $OpenCodeAgentPath -Filter "*.md"
+                foreach ($agentFile in $agentFiles) {
+                    Copy-Item $agentFile.FullName -Destination $AgentDir
+                }
+                Write-Info "Agents installed to: $AgentDir"
+            }
 
-        # Convert and install agent files based on target
-        if ($Target -eq "claude") {
+            # Create opencode.json if local install
+            if ($Scope -eq "local") {
+                Write-Info "Creating opencode.json..."
+                Write-OpenCodeConfig
+                Write-Info "Config created: opencode.json"
+            }
+
+        } elseif ($Target -eq "claude") {
             # For Claude Code: convert .agent.md to .md files and install
             Write-Info "Converting agents for Claude Code..."
             $agentFiles = Get-ChildItem -Path (Join-Path $ExtractedDir.FullName "agents") -Filter "*.agent.md"
@@ -122,6 +171,17 @@ $body
                 }
             }
             Write-Info "Agents installed to: $AgentDir"
+
+            # Copy workflows
+            if ($WorkflowDir) {
+                $WorkflowsPath = Join-Path $ExtractedDir.FullName "workflows"
+                if (Test-Path $WorkflowsPath) {
+                    New-Item -ItemType Directory -Force -Path $WorkflowDir | Out-Null
+                    Copy-Item -Path "$WorkflowsPath\*" -Destination $WorkflowDir -Recurse -Force
+                    Write-Info "Workflows installed to: $WorkflowDir"
+                }
+            }
+
         } else {
             # For VS Code: copy .agent.md files to .github/agents/
             New-Item -ItemType Directory -Force -Path ".github\agents" | Out-Null
@@ -133,22 +193,26 @@ $body
             Write-Info "Agents installed to: .github\agents"
         }
 
-        # Copy workflows (Claude Code only)
-        if ($Target -eq "claude" -and $WorkflowDir) {
-            $WorkflowsPath = Join-Path $ExtractedDir.FullName "workflows"
-            if (Test-Path $WorkflowsPath) {
-                New-Item -ItemType Directory -Force -Path $WorkflowDir | Out-Null
-                Copy-Item -Path "$WorkflowsPath\*" -Destination $WorkflowDir -Recurse -Force
-                Write-Info "Workflows installed to: $WorkflowDir"
-            }
-        }
-
         # Installation complete
         Write-Host ""
         Write-Info "Installation complete!"
         Write-Host ""
 
-        if ($Target -eq "claude") {
+        if ($Target -eq "opencode") {
+            Write-Host "Next steps:"
+            Write-Host "  1. Install IntraCom:"
+            Write-Host "     git clone https://github.com/btr-supply/agentic-intracom.git ../agentic-intracom"
+            Write-Host "  2. Install IntraCom dependencies:"
+            Write-Host "     cd ../agentic-intracom && bun install"
+            Write-Host "  3. Install OpenCode:"
+            Write-Host "     irm https://opencode.ai/install | iex"
+            if ($Scope -eq "global") {
+                Write-Host "  4. Agents installed globally in ~/.config/opencode/agent/"
+            } else {
+                Write-Host "  4. Run: opencode (in $(Get-Location))"
+            }
+            Write-Host "  5. Use @sibyl to orchestrate the elite team"
+        } elseif ($Target -eq "claude") {
             Write-Host "Next steps:"
             Write-Host "  1. Restart Claude Code or reload your IDE"
             if ($Scope -eq "global") {
@@ -161,7 +225,7 @@ $body
             Write-Host "Next steps:"
             Write-Host "  1. Restart VS Code or reload the window"
             if ($Scope -eq "global") {
-                Write-Host "  2. Agents installed globally in ~/.github/agents/"
+                Write-Host "  2. Agents installed globally in ~/.vscode/agents/btr-af/"
             } else {
                 Write-Host "  2. Agents installed locally in $(Get-Location)\.github\agents\"
             }
