@@ -20,6 +20,7 @@ $Scope = if ($Global) { "global" } else { "local" }
 function Write-Info { Write-Host "✓ $args" -ForegroundColor Green }
 function Write-Warn { Write-Host "⚠ $args" -ForegroundColor Yellow }
 function Write-Err { Write-Host "✗ $args" -ForegroundColor Red; exit 1 }
+function Write-Log { Write-Host "  → $args" -ForegroundColor Cyan }
 
 # Get latest release tag
 function Get-LatestTag {
@@ -31,7 +32,63 @@ function Get-LatestTag {
     }
 }
 
-# Write opencode.json
+# Merge IntraCom MCP config into existing opencode.json
+function Merge-OpenCodeConfig {
+    param([string]$ConfigFile)
+
+    # Check if intracom already exists
+    if (Test-Path $ConfigFile) {
+        $content = Get-Content $ConfigFile -Raw
+        if ($content -match '"intracom"\s*:') {
+            Write-Log "IntraCom MCP already configured in $ConfigFile"
+            return
+        }
+    }
+
+    # Backup existing config
+    Write-Log "Backing up existing $ConfigFile to $ConfigFile.bak"
+    if (Test-Path $ConfigFile) {
+        Copy-Item $ConfigFile "$ConfigFile.bak"
+    }
+
+    # Read existing or start fresh
+    if (Test-Path "$ConfigFile.bak") {
+        $existing = Get-Content "$ConfigFile.bak" -Raw | ConvertFrom-Json
+    } else {
+        $existing = @{}
+    }
+
+    # Add intracom MCP config
+    if (-not $existing.PSObject.Properties['mcp']) {
+        $existing | Add-Member -Type NoteProperty -Name 'mcp' -Value @{}
+    }
+
+    $intracomConfig = @{
+        type = "local"
+        command = @("bun", "run", "../agentic-intracom/src/index.ts")
+        environment = @{
+            INTRACOM_STORAGE = ".opencode/intracom-state.json"
+        }
+        enabled = $true
+    }
+
+    $existing.mcp | Add-Member -Type NoteProperty -Name 'intracom' -Value $intracomConfig -Force
+
+    # Ensure tools section includes intracom
+    if (-not $existing.PSObject.Properties['tools']) {
+        $existing | Add-Member -Type NoteProperty -Name 'tools' -Value @{}
+    }
+    $existing.tools | Add-Member -Type NoteProperty -Name 'intracom*' -Value $true -Force
+
+    # Write merged config
+    $jsonOutput = $existing | ConvertTo-Json -Depth 10
+    $jsonOutput | Out-File -FilePath $ConfigFile -Encoding UTF8
+
+    Remove-Item "$ConfigFile.bak" -ErrorAction SilentlyContinue
+    Write-Info "Merged IntraCom MCP into $ConfigFile"
+}
+
+# Create new opencode.json (only if not exists)
 function Write-OpenCodeConfig {
     @'
 {
@@ -92,6 +149,17 @@ function Main {
     Write-Host ("=" * (23 + $InstallName.Length)) -ForegroundColor Cyan
     Write-Host ""
 
+    # Check for existing installation
+    if (Test-Path $AgentDir) {
+        $existingAgents = Get-ChildItem -Path $AgentDir -Filter "*.md" -ErrorAction SilentlyContinue
+        if ($existingAgents.Count -gt 0) {
+            Write-Warn "Found existing installation with $($existingAgents.Count) agent(s)"
+            Write-Log "Agent directory: $AgentDir"
+            Write-Log "Updating to version: ${Version}"
+            Write-Host ""
+        }
+    }
+
     # Get version
     Write-Info "Fetching latest version..."
     if (-not $Version) {
@@ -105,7 +173,7 @@ function Main {
     Write-Info "Target: $InstallName"
 
     # Create directory
-    Write-Info "Creating installation directory..."
+    Write-Log "Creating installation directory: $AgentDir"
     New-Item -ItemType Directory -Force -Path $AgentDir | Out-Null
 
     # Download agents
@@ -133,24 +201,34 @@ function Main {
             Write-Info "Installing agents for OpenCode..."
             $OpenCodeAgentPath = Join-Path $ExtractedDir.FullName ".opencode\agent"
             if (Test-Path $OpenCodeAgentPath) {
-                New-Item -ItemType Directory -Force -Path $AgentDir | Out-Null
                 $agentFiles = Get-ChildItem -Path $OpenCodeAgentPath -Filter "*.md"
+                Write-Log "Found $($agentFiles.Count) agent(s) to install"
+
+                # Copy agents (overwrite existing)
+                New-Item -ItemType Directory -Force -Path $AgentDir | Out-Null
                 foreach ($agentFile in $agentFiles) {
-                    Copy-Item $agentFile.FullName -Destination $AgentDir
+                    Copy-Item $agentFile.FullName -Destination $AgentDir -Force
                 }
-                Write-Info "Agents installed to: $AgentDir"
+
+                $installedCount = (Get-ChildItem -Path $AgentDir -Filter "*.md" -ErrorAction SilentlyContinue).Count
+                Write-Info "Agents installed: $installedCount agent(s) in $AgentDir"
             }
 
-            # Create opencode.json if local install
+            # Handle opencode.json (merge, don't overwrite)
             if ($Scope -eq "local") {
-                Write-Info "Creating opencode.json..."
-                Write-OpenCodeConfig
-                Write-Info "Config created: opencode.json"
+                if (Test-Path "opencode.json") {
+                    Write-Log "Existing opencode.json found, merging IntraCom configuration..."
+                    Merge-OpenCodeConfig -ConfigFile "opencode.json"
+                } else {
+                    Write-Log "Creating new opencode.json..."
+                    Write-OpenCodeConfig
+                    Write-Info "Created: opencode.json"
+                }
             }
 
         } elseif ($Target -eq "claude") {
             # For Claude Code: convert .agent.md to .md files and install
-            Write-Info "Converting agents for Claude Code..."
+            Write-Info "Installing agents for Claude Code..."
             $agentFiles = Get-ChildItem -Path (Join-Path $ExtractedDir.FullName "agents") -Filter "*.agent.md"
             foreach ($agentFile in $agentFiles) {
                 $basename = [System.IO.Path]::GetFileNameWithoutExtension($agentFile.Name).Replace(".agent", "")
@@ -170,7 +248,8 @@ $body
 "@ | Out-File -FilePath (Join-Path $AgentDir "$basename.md") -Encoding UTF8
                 }
             }
-            Write-Info "Agents installed to: $AgentDir"
+            $installedCount = (Get-ChildItem -Path $AgentDir -Filter "*.md" -ErrorAction SilentlyContinue).Count
+            Write-Info "Agents installed: $installedCount agent(s) in $AgentDir"
 
             # Copy workflows
             if ($WorkflowDir) {
@@ -178,7 +257,7 @@ $body
                 if (Test-Path $WorkflowsPath) {
                     New-Item -ItemType Directory -Force -Path $WorkflowDir | Out-Null
                     Copy-Item -Path "$WorkflowsPath\*" -Destination $WorkflowDir -Recurse -Force
-                    Write-Info "Workflows installed to: $WorkflowDir"
+                    Write-Info "Workflows updated in: $WorkflowDir"
                 }
             }
 
@@ -188,9 +267,10 @@ $body
             $agentFiles = Get-ChildItem -Path (Join-Path $ExtractedDir.FullName "agents") -Filter "*.agent.md"
             foreach ($agentFile in $agentFiles) {
                 $basename = [System.IO.Path]::GetFileNameWithoutExtension($agentFile.Name).Replace(".agent", "")
-                Copy-Item $agentFile.FullName -Destination ".github\agents\$basename.agent.md"
+                Copy-Item $agentFile.FullName -Destination ".github\agents\$basename.agent.md" -Force
             }
-            Write-Info "Agents installed to: .github\agents"
+            $installedCount = (Get-ChildItem -Path ".github\agents" -Filter "*.agent.md" -ErrorAction SilentlyContinue).Count
+            Write-Info "Agents installed: $installedCount agent(s) in .github\agents\"
         }
 
         # Installation complete

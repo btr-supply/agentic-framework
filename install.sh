@@ -9,6 +9,7 @@ set -e
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Configuration
@@ -22,6 +23,7 @@ VERSION=""
 info() { printf "${GREEN}✓${NC} %s\n" "$1"; }
 warn() { printf "${YELLOW}⚠${NC} %s\n" "$1"; }
 error() { printf "${RED}✗${NC} %s\n" "$1" >&2; exit 1; }
+log() { printf "${BLUE}  →${NC} %s\n" "$1"; }
 
 # Show usage
 show_usage() {
@@ -81,8 +83,102 @@ get_latest_tag() {
     echo "$tag"
 }
 
-# Write opencode.json
-write_opencode_config() {
+# Merge IntraCom MCP config into existing opencode.json
+merge_opencode_config() {
+    local config_file="$1"
+    local intracom_mcp='
+  "intracom": {
+    "type": "local",
+    "command": ["bun", "run", "../agentic-intracom/src/index.ts"],
+    "environment": {
+      "INTRACOM_STORAGE": ".opencode/intracom-state.json"
+    },
+    "enabled": true
+  }'
+
+    # Check if intracom already exists
+    if grep -q '"intracom":' "$config_file" 2>/dev/null; then
+        log "IntraCom MCP already configured in $config_file"
+        return 0
+    fi
+
+    # Backup existing config
+    log "Backing up existing $config_file to $config_file.bak"
+    cp "$config_file" "$config_file.bak"
+
+    # Check if file has mcp section
+    if grep -q '"mcp":' "$config_file" 2>/dev/null; then
+        # Insert intracom into existing mcp section
+        log "Merging IntraCom MCP into existing mcp section..."
+
+        # Use awk to insert intracom before closing brace of mcp section
+        awk -v intracom="$intracom_mcp" '
+            /"mcp":\s*\{/ {
+                in_mcp=1
+                print
+                next
+            }
+            in_mcp && /^\s*\}/ {
+                print intracom
+                in_mcp=0
+            }
+            { print }
+        ' "$config_file.bak" > "$config_file"
+
+        rm -f "$config_file.bak"
+        info "Merged IntraCom MCP into $config_file"
+    else
+        # No mcp section, add it
+        log "Adding mcp section with IntraCom to $config_file..."
+
+        # Insert mcp section before tools or at end
+        awk -v intracom="$intracom_mcp" '
+            /"tools":\s*\{/ {
+                print "  \"mcp\": {"
+                print intracom
+                print "  },"
+                in_tools=1
+                next
+            }
+            { print }
+            END {
+                if (!in_tools) {
+                    print "  \"mcp\": {"
+                    print intracom
+                    print "  },"
+                }
+            }
+        ' "$config_file.bak" > "$config_file"
+
+        rm -f "$config_file.bak"
+        info "Added mcp section with IntraCom to $config_file"
+    fi
+
+    # Ensure tools section includes intracom
+    if grep -q '"tools":' "$config_file" 2>/dev/null; then
+        if ! grep -q '"intracom\*":' "$config_file" 2>/dev/null; then
+            log "Adding intracom tools to existing tools section..."
+            awk '
+                /"tools":\s*\{/ {
+                    in_tools=1
+                    print
+                    print "    \"intracom*\": true,"
+                    next
+                }
+                in_tools && /^\s*\}/ && !added {
+                    print "    \"intracom*\": true"
+                    added=1
+                }
+                { print }
+            ' "$config_file" > "$config_file.tmp"
+            mv "$config_file.tmp" "$config_file"
+            info "Added intracom tools to $config_file"
+        fi
+    fi
+}
+
+# Create new opencode.json (only if not exists)
+create_opencode_config() {
     cat > opencode.json << 'EOF'
 {
   "$schema": "https://opencode.ai/config.json",
@@ -135,11 +231,9 @@ main() {
     if [ "$TARGET" = "opencode" ]; then
         if [ "$SCOPE" = "global" ]; then
             AGENT_DIR="${HOME}/.config/opencode/agent"
-            CONFIG_DIR="${HOME}/.config/opencode"
             INSTALL_NAME="OpenCode (global)"
         else
             AGENT_DIR=".opencode/agent"
-            CONFIG_DIR="."
             INSTALL_NAME="OpenCode (local)"
         fi
     elif [ "$TARGET" = "claude" ]; then
@@ -155,11 +249,9 @@ main() {
     else
         if [ "$SCOPE" = "global" ]; then
             AGENT_DIR="${HOME}/.vscode/agents/btr-af"
-            WORKFLOW_DIR=""  # VS Code doesn't use workflows directory
             INSTALL_NAME="VS Code (global)"
         else
             AGENT_DIR=".vscode/agents/btr-af"
-            WORKFLOW_DIR=""  # VS Code doesn't use workflows directory
             INSTALL_NAME="VS Code (local)"
         fi
     fi
@@ -167,6 +259,15 @@ main() {
     echo "BTR-AF Installer for $INSTALL_NAME"
     echo "===================================="
     echo ""
+
+    # Check for existing installation
+    if [ -d "$AGENT_DIR" ] && [ -n "$(ls -A "$AGENT_DIR" 2>/dev/null)" ]; then
+        EXISTING_AGENTS=$(ls -1 "$AGENT_DIR" 2>/dev/null | wc -l | tr -d ' ')
+        warn "Found existing installation with $EXISTING_AGENTS agent(s)"
+        log "Agent directory: $AGENT_DIR"
+        log "Updating to version: ${VERSION:-latest}"
+        echo ""
+    fi
 
     # Get version
     info "Fetching latest version..."
@@ -181,7 +282,7 @@ main() {
     info "Target: $INSTALL_NAME"
 
     # Create directory
-    info "Creating installation directory..."
+    log "Creating installation directory: $AGENT_DIR"
     mkdir -p "$AGENT_DIR"
 
     # Download agents
@@ -207,21 +308,32 @@ main() {
         # For OpenCode: copy .opencode/agent/*.md files
         info "Installing agents for OpenCode..."
         if [ -d "${EXTRACTED_DIR}/.opencode/agent" ]; then
-            mkdir -p "$AGENT_DIR"
+            # Count new agents
+            NEW_AGENTS=$(ls -1 "${EXTRACTED_DIR}/.opencode/agent/"*.md 2>/dev/null | wc -l | tr -d ' ')
+            log "Found $NEW_AGENTS agent(s) to install"
+
+            # Copy agents (overwrite existing)
             cp "${EXTRACTED_DIR}/.opencode/agent/"*.md "$AGENT_DIR/" 2>/dev/null || true
-            info "Agents installed to: $AGENT_DIR"
+
+            INSTALLED=$(ls -1 "$AGENT_DIR/"*.md 2>/dev/null | wc -l | tr -d ' ')
+            info "Agents installed: $INSTALLED agent(s) in $AGENT_DIR"
         fi
 
-        # Create opencode.json if local install
+        # Handle opencode.json (merge, don't overwrite)
         if [ "$SCOPE" = "local" ]; then
-            info "Creating opencode.json..."
-            write_opencode_config
-            info "Config created: opencode.json"
+            if [ -f "opencode.json" ]; then
+                log "Existing opencode.json found, merging IntraCom configuration..."
+                merge_opencode_config "opencode.json"
+            else
+                log "Creating new opencode.json..."
+                create_opencode_config
+                info "Created: opencode.json"
+            fi
         fi
 
     elif [ "$TARGET" = "claude" ]; then
         # For Claude Code: convert .agent.md to .md files and install
-        info "Converting agents for Claude Code..."
+        info "Installing agents for Claude Code..."
         for agent_file in "${EXTRACTED_DIR}/agents/"*.agent.md; do
             if [ -f "$agent_file" ]; then
                 basename=$(basename "$agent_file" .agent.md)
@@ -236,13 +348,14 @@ main() {
                 ' "$agent_file" > "$AGENT_DIR/${basename}.md"
             fi
         done
-        info "Agents installed to: $AGENT_DIR"
+        INSTALLED=$(ls -1 "$AGENT_DIR/"*.md 2>/dev/null | wc -l | tr -d ' ')
+        info "Agents installed: $INSTALLED agent(s) in $AGENT_DIR"
 
         # Copy workflows
         if [ -n "$WORKFLOW_DIR" ] && [ -d "${EXTRACTED_DIR}/workflows" ]; then
             mkdir -p "$WORKFLOW_DIR"
             cp -r "${EXTRACTED_DIR}/workflows/"* "$WORKFLOW_DIR/"
-            info "Workflows installed to: $WORKFLOW_DIR"
+            info "Workflows updated in: $WORKFLOW_DIR"
         fi
 
     else
@@ -254,7 +367,8 @@ main() {
                 cp "$agent_file" ".github/agents/${basename}.agent.md"
             fi
         done
-        info "Agents installed to: .github/agents/"
+        INSTALLED=$(ls -1 ".github/agents/"*.agent.md 2>/dev/null | wc -l | tr -d ' ')
+        info "Agents installed: $INSTALLED agent(s) in .github/agents/"
     fi
 
     # Installation complete
@@ -264,9 +378,12 @@ main() {
 
     if [ "$TARGET" = "opencode" ]; then
         echo "Next steps:"
-        echo "  1. Install IntraCom: cd ~/Work && git clone https://github.com/btr-supply/agentic-intracom.git"
-        echo "  2. Install IntraCom dependencies: cd ~/Work/agentic-intracom && bun install"
-        echo "  3. Install OpenCode: curl -fsSL https://opencode.ai/install | bash"
+        echo "  1. Install IntraCom:"
+        echo "     git clone https://github.com/btr-supply/agentic-intracom.git ../agentic-intracom"
+        echo "  2. Install IntraCom dependencies:"
+        echo "     cd ../agentic-intracom && bun install"
+        echo "  3. Install OpenCode:"
+        echo "     curl -fsSL https://opencode.ai/install | bash"
         if [ "$SCOPE" = "global" ]; then
             echo "  4. Agents installed globally in ~/.config/opencode/agent/"
         else
